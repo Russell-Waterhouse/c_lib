@@ -32,11 +32,21 @@ PointerResult arena_push(Arena* arena, size_t size) {
   void* new_pos = aligned_current_pos + size;
 
   if (new_pos >= arena->current_position + arena->len) {
-    /* TODO: put in linked list next arena */
-    p.status = FAIL;
-    p.val.err.err_code = MEM_ALLOC_FAIL;
-    p.val.err.err_msg = "Overran arena allocator";
-    return p;
+    arena->next = malloc(sizeof(*arena));
+    if (NULL == arena->next) {
+      p.status = FAIL;
+      p.val.err.err_code = MEM_ALLOC_FAIL;
+      p.val.err.err_msg = "Failed to create next arena in linked list";
+      return p;
+    }
+    Result create_result = arena_create(arena->next, size * 2);
+    if (FAIL == create_result) {
+      p.status = FAIL;
+      p.val.err.err_code = MEM_ALLOC_FAIL;
+      p.val.err.err_msg = "Failed to initialize next arena in linked list";
+      return p;
+    }
+    return arena_push(arena->current_position, size);
   }
   arena->current_position = new_pos;
 
@@ -50,6 +60,7 @@ Result arena_free(Arena* arena) {
   if (NULL == arena->start_position) {
     return FAIL;
   }
+  /* TODO: free the actual arena structs themselves */
   free(arena->start_position);
   if (NULL != arena->next) {
     return arena_free(arena->next);

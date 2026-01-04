@@ -40,7 +40,7 @@ ArenaResult arena_create(size_t len) {
     res.err.msg = "Cannot create an arena with a len of 0";
     return res;
   }
-  res.arena = (Arena*)malloc(len);
+  res.arena = (Arena*)malloc(sizeof(Arena));
   if (NULL == res.arena) {
     res.status = FAIL;
     res.err.code = MEM_ALLOC_FAIL;
@@ -106,11 +106,14 @@ Result arena_free(Arena* arena) {
     return FAIL;
   }
   free(arena->start_position);
+  arena->start_position = NULL;
   if (NULL != arena->next) {
     next_free_res = arena_free(arena->next);
+    arena->next = NULL;
   }
 
   free(arena);
+  arena = NULL;
   return SUCCESS && next_free_res;
 }
 

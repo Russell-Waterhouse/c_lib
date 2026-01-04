@@ -1,5 +1,6 @@
 #include "../types.h"
 #include "../arenas.h"
+#include "../pretty_print.h"
 
 
 Result test_create() {
@@ -8,6 +9,26 @@ Result test_create() {
     arena_free(r.arena);
   }
   return r.status;
+}
+
+Result test_push_linked_list() {
+  Arena* a;
+  ArenaResult r1 = arena_create(10);
+  if (r1.status != SUCCESS) {
+    return FAIL;
+  }
+  a = r1.arena;
+  PointerResult r = arena_push(a, sizeof(u8) * 200);
+  if (r.status != SUCCESS ||
+      a->next == NULL ||
+      a->next->len != 420 ||
+      r.val.res != a->next->start_position
+     ) {
+    arena_free(a);
+    return FAIL;
+  }
+  arena_free(a);
+  return SUCCESS;
 }
 
 Result test_push() {
@@ -75,13 +96,14 @@ void test_arenas(void) {
   puts("Starting arena allocator tests.");
   if (
       test_create() == SUCCESS &&
-      test_push() == SUCCESS
+      test_push() == SUCCESS &&
+      test_push_linked_list() == SUCCESS
   ) {
-    puts("\x1B[32mTests completed successfully!\033[0m\n");
+    print_green("Tests completed successfully!");
     exit(0);
   }
 
 
-  puts("\033[0;31mThere were test failures.\033[0m\n");
+  print_red("There were test failures.");
   exit(1);
 }

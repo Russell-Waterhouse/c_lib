@@ -1,6 +1,5 @@
 #include "../types.h"
 #include "../arenas.h"
-#include "../arenas.c"
 
 
 Result test_create() {

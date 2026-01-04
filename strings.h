@@ -78,11 +78,11 @@ Result strip_in_place(String s);
 #include "./strings.h"
 #include "./implementations/size_t_dynamic_array.h"
 #include "implementations/i64_dynamic_array.h"
-#include "./utils.h"
+#include "./casts.h"
 
+/* TODO: don't include the .c files, make those header-only libraries */
 #include "./implementations/size_t_dynamic_array.c"
 #include "implementations/i64_dynamic_array.c"
-#include "./utils.c"
 
 StrResult cstr_to_str(char* cstr, u64 size) {
   StrResult res = {0};
@@ -91,8 +91,8 @@ StrResult cstr_to_str(char* cstr, u64 size) {
   res.str.str = (char*)calloc(size, sizeof(char));
   if (NULL == res.str.str) {
     res.status = FAIL;
-    res.err.err_code = MEM_ALLOC_FAIL;
-    res.err.err_msg = "Failed to allocate memory for string in __FUNCTION__";
+    res.err.code = MEM_ALLOC_FAIL;
+    res.err.msg = "Failed to allocate memory for string in __FUNCTION__";
     return res;
   }
 
@@ -110,8 +110,8 @@ ActionResult free_str(String s) {
   ActionResult res = {0};
   if (NULL == s.str) {
     res.status = FAIL;
-    res.err.err_code = INVALID_ARG;
-    res.err.err_msg = "Attempting to free a null string at __LINE__";
+    res.err.code = INVALID_ARG;
+    res.err.msg = "Attempting to free a null string at __LINE__";
     return res;
   }
   free(s.str);
@@ -141,8 +141,8 @@ StrResult concat(String s1, String s2) {
     (s2.size > 0 && NULL == s2.str)
   ) {
     s.status = FAIL;
-    s.err.err_code = INVALID_ARG;
-    s.err.err_msg = "String with non-zero size has null string at concat";
+    s.err.code = INVALID_ARG;
+    s.err.msg = "String with non-zero size has null string at concat";
     return s;
   }
   size = s1.size + s2.size;
@@ -150,8 +150,8 @@ StrResult concat(String s1, String s2) {
   s.str.str = calloc(size, sizeof(char));
   if (NULL == s.str.str) {
     s.status = FAIL;
-    s.err.err_code = MEM_ALLOC_FAIL;
-    s.err.err_msg = "Failed to allocate memory when concatenating strings";
+    s.err.code = MEM_ALLOC_FAIL;
+    s.err.msg = "Failed to allocate memory when concatenating strings";
     return s;
   }
 
@@ -398,8 +398,8 @@ u64Result str_to_u64(String s) {
   u64 result = 0;
   if (s.size == 0 || NULL == s.str) {
     res.status = FAIL;
-    res.err.err_code = INVALID_ARG;
-    res.err.err_msg = "Cannot cast a null string to u64";
+    res.err.code = INVALID_ARG;
+    res.err.msg = "Cannot cast a null string to u64";
     return res;
   }
 
@@ -453,7 +453,7 @@ DynStrArrResult insert_back(DynStringArr a, String value) {
     a.arr = realloc(a.arr, a.memsize);
     if (a.arr == NULL) {
       res.status = FAIL;
-      res.err.err_code = MEM_ALLOC_FAIL;
+      res.err.code = MEM_ALLOC_FAIL;
       return res;
     }
   }

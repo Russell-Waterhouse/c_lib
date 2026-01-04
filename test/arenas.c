@@ -3,21 +3,23 @@
 
 
 Result test_create() {
-  Arena a = {0};
-  Result r = arena_create(&a, KiB(4));
-  arena_free(&a);
-  return r;
+  ArenaResult r = arena_create(KiB(4));
+  if (r.status == SUCCESS) {
+    arena_free(r.arena);
+  }
+  return r.status;
 }
 
 Result test_push() {
   Arena a = {0};
-  Result r1 = arena_create(&a, KiB(4));
+  ArenaResult r1 = arena_create(KiB(4));
+  a = *r1.arena;
   PointerResult r2 = arena_push(&a, sizeof(u8));
   PointerResult r3 = arena_push(&a, sizeof(u16));
   PointerResult r4 = arena_push(&a, sizeof(u32));
   PointerResult r5 = arena_push(&a, sizeof(u64));
   if (
-      r1 != SUCCESS ||
+      r1.status != SUCCESS ||
       r2.status != SUCCESS ||
       r3.status != SUCCESS ||
       r4.status != SUCCESS ||

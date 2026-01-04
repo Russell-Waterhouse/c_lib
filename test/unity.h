@@ -1,3 +1,5 @@
+#define CASTS_IMPLEMENTATION
+#include "../casts.h"
 #define MY_STRINGS_IMPLEMENTATION
 #include "../strings.h"
 #define ARENAS_IMPLEMENTATION

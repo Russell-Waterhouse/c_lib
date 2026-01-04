@@ -101,19 +101,17 @@ PointerResult arena_push(Arena* arena, size_t size) {
 }
 
 Result arena_free(Arena* arena) {
+  Result next_free_res = SUCCESS;
   if (NULL == arena->start_position) {
     return FAIL;
   }
   free(arena->start_position);
   if (NULL != arena->next) {
-    return arena_free(arena->next);
-  }
-  if (NULL != arena->next) {
-    arena_free(arena->next);
+    next_free_res = arena_free(arena->next);
   }
 
   free(arena);
-  return SUCCESS;
+  return SUCCESS && next_free_res;
 }
 
 #endif

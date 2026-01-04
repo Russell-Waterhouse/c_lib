@@ -3,7 +3,7 @@ set -e
 
 rm -rf ./build
 mkdir -p ./build
-
+${fileDirname}
 
 gcc \
   --std=c89 \

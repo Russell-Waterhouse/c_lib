@@ -11,13 +11,13 @@ Result test_create() {
 }
 
 Result test_push() {
-  Arena a = {0};
+  Arena* a;
   ArenaResult r1 = arena_create(KiB(4));
-  a = *r1.arena;
-  PointerResult r2 = arena_push(&a, sizeof(u8));
-  PointerResult r3 = arena_push(&a, sizeof(u16));
-  PointerResult r4 = arena_push(&a, sizeof(u32));
-  PointerResult r5 = arena_push(&a, sizeof(u64));
+  a = r1.arena;
+  PointerResult r2 = arena_push(a, sizeof(u8));
+  PointerResult r3 = arena_push(a, sizeof(u16));
+  PointerResult r4 = arena_push(a, sizeof(u32));
+  PointerResult r5 = arena_push(a, sizeof(u64));
   if (
       r1.status != SUCCESS ||
       r2.status != SUCCESS ||
@@ -25,7 +25,7 @@ Result test_push() {
       r4.status != SUCCESS ||
       r5.status != SUCCESS
   ) {
-    arena_free(&a);
+    arena_free(a);
     return FAIL;
   }
 
@@ -44,13 +44,13 @@ Result test_push() {
       *ru32 != 0xFFFFFF ||
       *ru64 != 0
   ) {
-    arena_free(&a);
+    arena_free(a);
     return FAIL;
   }
 
-  PointerResult rarr = arena_push(&a, sizeof(u16) * 255);
+  PointerResult rarr = arena_push(a, sizeof(u16) * 255);
   if (rarr.status != SUCCESS) {
-    arena_free(&a);
+    arena_free(a);
     return FAIL;
   }
 
@@ -62,12 +62,12 @@ Result test_push() {
 
   for(i = 0; i < 255; i++) {
     if (arr[i] != i) {
-      arena_free(&a);
+      arena_free(a);
       return FAIL;
     }
   }
 
-  arena_free(&a);
+  arena_free(a);
   return SUCCESS;
 }
 

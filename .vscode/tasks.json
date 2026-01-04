@@ -3,7 +3,7 @@
         {
             "type": "cppbuild",
             "label": "C/C++: gcc build active file",
-            "command": "/usr/lib64/ccache/gcc",
+            "command": "/usr/bin/gcc",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
@@ -11,11 +11,10 @@
                 "-Werror",
                 "-Wall",
                 "-Wconversion",
-                "/home/russ/repos/personal/c_lib/implementations/*.c",
-                "/home/russ/repos/personal/c_lib/strings.c",
                 "${file}",
+                "-I.",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "/home/russ/repos/personal/c_lib/build/${fileBasenameNoExtension}"
             ],
             "options": {
                 "cwd": "${fileDirname}"

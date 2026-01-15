@@ -1,30 +1,52 @@
 #include "../types.h"
 #include "../arenas.h"
-#include "../arenas.c"
+#include "../pretty_print.h"
 
 
 Result test_create() {
-  Arena a = {0};
-  Result r = arena_create(&a, KiB(4));
-  arena_free(&a);
-  return r;
+  ArenaResult r = arena_create(KiB(4));
+  if (r.status == SUCCESS) {
+    arena_free(r.arena);
+  }
+  return r.status;
+}
+
+Result test_push_linked_list() {
+  Arena* a;
+  ArenaResult r1 = arena_create(10);
+  if (r1.status != SUCCESS) {
+    return FAIL;
+  }
+  a = r1.arena;
+  PointerResult r = arena_push(a, sizeof(u8) * 200);
+  if (r.status != SUCCESS ||
+      a->next == NULL ||
+      a->next->len != 420 ||
+      r.val.res != a->next->start_position
+     ) {
+    arena_free(a);
+    return FAIL;
+  }
+  arena_free(a);
+  return SUCCESS;
 }
 
 Result test_push() {
-  Arena a = {0};
-  Result r1 = arena_create(&a, KiB(4));
-  PointerResult r2 = arena_push(&a, sizeof(u8));
-  PointerResult r3 = arena_push(&a, sizeof(u16));
-  PointerResult r4 = arena_push(&a, sizeof(u32));
-  PointerResult r5 = arena_push(&a, sizeof(u64));
+  Arena* a;
+  ArenaResult r1 = arena_create(KiB(4));
+  a = r1.arena;
+  PointerResult r2 = arena_push(a, sizeof(u8));
+  PointerResult r3 = arena_push(a, sizeof(u16));
+  PointerResult r4 = arena_push(a, sizeof(u32));
+  PointerResult r5 = arena_push(a, sizeof(u64));
   if (
-      r1 != SUCCESS ||
+      r1.status != SUCCESS ||
       r2.status != SUCCESS ||
       r3.status != SUCCESS ||
       r4.status != SUCCESS ||
       r5.status != SUCCESS
   ) {
-    arena_free(&a);
+    arena_free(a);
     return FAIL;
   }
 
@@ -43,13 +65,13 @@ Result test_push() {
       *ru32 != 0xFFFFFF ||
       *ru64 != 0
   ) {
-    arena_free(&a);
+    arena_free(a);
     return FAIL;
   }
 
-  PointerResult rarr = arena_push(&a, sizeof(u16) * 255);
+  PointerResult rarr = arena_push(a, sizeof(u16) * 255);
   if (rarr.status != SUCCESS) {
-    arena_free(&a);
+    arena_free(a);
     return FAIL;
   }
 
@@ -61,12 +83,12 @@ Result test_push() {
 
   for(i = 0; i < 255; i++) {
     if (arr[i] != i) {
-      arena_free(&a);
+      arena_free(a);
       return FAIL;
     }
   }
 
-  arena_free(&a);
+  arena_free(a);
   return SUCCESS;
 }
 
@@ -74,13 +96,14 @@ void test_arenas(void) {
   puts("Starting arena allocator tests.");
   if (
       test_create() == SUCCESS &&
-      test_push() == SUCCESS
+      test_push() == SUCCESS &&
+      test_push_linked_list() == SUCCESS
   ) {
-    puts("\x1B[32mTests completed successfully!\033[0m\n");
+    print_green("Tests completed successfully!");
     exit(0);
   }
 
 
-  puts("\033[0;31mThere were test failures.\033[0m\n");
+  print_red("There were test failures.");
   exit(1);
 }

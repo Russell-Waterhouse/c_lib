@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "../templates/linked_list.c"
 #include "../types.h"
+#include "../pretty_print.h"
 
 Result test_insert() {
   u64 i;
@@ -30,10 +31,10 @@ Result test_delete() {
 void test_ll() {
   puts("Starting Linked Lists tests.");
   if (test_insert() == SUCCESS && test_delete() == SUCCESS) {
-    puts("Tests completed Linked Lists successfully!");
+    print_green("Tests completed Linked Lists successfully!");
     return;
   }
-  puts("There were test failures.");
+  print_red("There were test failures.");
   return;
 }
 

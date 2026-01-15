@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include "../templates/dynamic_array.h"
 #include "../types.h"
-
-#include "../templates/dynamic_array.c"
+#include "../pretty_print.h"
 
 #define one_million (u64)1000000
 #define expected_memsize (u64)0b01 << 20
@@ -15,7 +14,7 @@ Result test_insert_back_when_empty() {
     return SUCCESS;
   }
 
-  puts("Failed to insert back");
+  print_red("Failed to insert back");
   GENERIC_TYPE_free(arr);
   return FAIL;
 }
@@ -29,7 +28,7 @@ Result test_resizing() {
   if (a.memsize == expected_memsize && a.size == one_million) {
     for (i = 0; i < one_million; i++) {
       if (GENERIC_TYPE_at_or_die(a, i) != i) {
-        puts("Resizing failed");
+        print_red("Resizing failed");
         GENERIC_TYPE_free(a);
         return FAIL;
       }
@@ -38,7 +37,7 @@ Result test_resizing() {
     GENERIC_TYPE_free(a);
     return SUCCESS;
   } else {
-    puts("Resizing failed to have the expected memsize and size");
+    print_red("Resizing failed to have the expected memsize and size");
     GENERIC_TYPE_free(a);
     return FAIL;
   }
@@ -50,11 +49,11 @@ void test_dynamic_array() {
       test_insert_back_when_empty() == SUCCESS &&
       test_resizing() == SUCCESS
   ) {
-    puts("Tests completed successfully!");
+    print_green("Tests completed successfully!");
     return;
   }
 
 
-  puts("There were test failures.");
+  print_red("There were test failures.");
   return;
 }

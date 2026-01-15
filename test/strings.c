@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "../types.h"
-
-#define MY_STRINGS_IMPLEMENTATION
 #include "../strings.h"
+#include "../pretty_print.h"
 
 Result test_cstr_to_str() {
   char s1[] = "";
@@ -201,11 +200,11 @@ void test_strings() {
       test_split() == SUCCESS &&
       test_find_all() == SUCCESS
   ) {
-    puts("\x1B[32mTests completed successfully!\033[0m\n");
+    print_green("Tests completed successfully!");
     return;
   }
 
 
-  puts("\033[0;31mThere were test failures.\033[0m\n");
+  print_red("There were test failures.");
   return;
 }

@@ -5,9 +5,10 @@
 #include "./strings.h"
 #include <stdio.h>
 
-typedef struct PDFNode {
 
-} PDFNode;
+typedef struct PDFObject {
+
+} PDFObject;
 
 
 typedef struct {

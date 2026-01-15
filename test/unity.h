@@ -8,3 +8,7 @@
 #include "../pretty_print.h"
 #define GENERIC_TYPE_DYNAMIC_ARRAY_IMPLEMENTATION
 #include "../templates/dynamic_array.h"
+#define PDF_IMPLEMENTATION
+#include "../pdf.h"
+#define DICTIONARY_IMPLEMENTATION
+#include "../dictionary.h"

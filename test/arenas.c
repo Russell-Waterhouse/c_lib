@@ -100,10 +100,10 @@ void test_arenas(void) {
       test_push_linked_list() == SUCCESS
   ) {
     print_green("Tests completed successfully!");
-    exit(0);
+    return;
   }
 
 
   print_red("There were test failures.");
-  exit(1);
+  return;
 }

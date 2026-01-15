@@ -36,21 +36,21 @@ ArenaResult arena_create(size_t len) {
   ArenaResult res;
   if (len < 1) {
     res.status = FAIL;
-    res.err.code = INVALID_ARG;
+    res.err.code = ERR_INVALID_ARG;
     res.err.msg = "Cannot create an arena with a len of 0";
     return res;
   }
   res.arena = (Arena*)malloc(sizeof(Arena));
   if (NULL == res.arena) {
     res.status = FAIL;
-    res.err.code = MEM_ALLOC_FAIL;
+    res.err.code = ERR_MEM_ALLOC_FAIL;
     res.err.msg = "Failed to malloc arena struct in arena_create";
     return res;
   }
   res.arena->start_position = malloc(len);
   if (NULL == res.arena->start_position) {
     res.status = FAIL;
-    res.err.code = MEM_ALLOC_FAIL;
+    res.err.code = ERR_MEM_ALLOC_FAIL;
     res.err.msg = "Failed to alloc arena buffer";
     free(res.arena);
     res.arena = NULL;
@@ -68,7 +68,7 @@ PointerResult arena_push(Arena* arena, size_t size) {
   PointerResult p;
   if (arena->len == 0 || arena->start_position == NULL) {
     p.status = FAIL;
-    p.val.err.code = INVALID_ARG;
+    p.val.err.code = ERR_INVALID_ARG;
     p.val.err.msg = "Passed a null arena to arena_push";
     return p;
   }

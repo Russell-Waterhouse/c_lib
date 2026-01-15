@@ -21,11 +21,11 @@ typedef enum {
 } Result;
 
 typedef enum {
-  NONE = 0,
-  INVALID_ARG = 1,
-  MEM_ALLOC_FAIL = 2,
-  IO_DISK_FAIL = 3,
-  IO_NETWORK_FAIL = 4,
+  ERR_NONE = 0,
+  ERR_INVALID_ARG = 1,
+  ERR_MEM_ALLOC_FAIL = 2,
+  ERR_IO_DISK_FAIL = 3,
+  ERR_IO_NETWORK_FAIL = 4,
 } ErrCode;
 
 typedef struct {
@@ -36,7 +36,7 @@ typedef struct {
 typedef struct {
   Result status;
   Error err;
-} ActionResult;
+} IOResult; /* TODO: Not sure I'm happy with this name. */
 
 typedef struct {
   Result status;

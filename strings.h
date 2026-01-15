@@ -48,7 +48,7 @@ StrResult concat(String s1, String s2);
 DynStrArrResult insert_back(DynStringArr a, String value);
 StrResult cstr_to_str(char* cstr, u64 size);
 StrResult cstrs_to_str_unsafe(char** cstr);
-ActionResult free_str(String s);
+IOResult free_str(String s);
 SliceResult slice(String s1, u64 start, u64 end);
 SplitResultOption split_str(String s, char split_char);
 u8 str_equal(String s1, String s2);
@@ -91,7 +91,7 @@ StrResult cstr_to_str(char* cstr, u64 size) {
   res.str.str = (char*)calloc(size, sizeof(char));
   if (NULL == res.str.str) {
     res.status = FAIL;
-    res.err.code = MEM_ALLOC_FAIL;
+    res.err.code = ERR_MEM_ALLOC_FAIL;
     res.err.msg = "Failed to allocate memory for string in __FUNCTION__";
     return res;
   }
@@ -106,11 +106,11 @@ StrResult cstr_to_str(char* cstr, u64 size) {
   return res;
 }
 
-ActionResult free_str(String s) {
-  ActionResult res = {0};
+IOResult free_str(String s) {
+  IOResult res = {0};
   if (NULL == s.str) {
     res.status = FAIL;
-    res.err.code = INVALID_ARG;
+    res.err.code = ERR_INVALID_ARG;
     res.err.msg = "Attempting to free a null string at __LINE__";
     return res;
   }
@@ -141,7 +141,7 @@ StrResult concat(String s1, String s2) {
     (s2.size > 0 && NULL == s2.str)
   ) {
     s.status = FAIL;
-    s.err.code = INVALID_ARG;
+    s.err.code = ERR_INVALID_ARG;
     s.err.msg = "String with non-zero size has null string at concat";
     return s;
   }
@@ -150,7 +150,7 @@ StrResult concat(String s1, String s2) {
   s.str.str = calloc(size, sizeof(char));
   if (NULL == s.str.str) {
     s.status = FAIL;
-    s.err.code = MEM_ALLOC_FAIL;
+    s.err.code = ERR_MEM_ALLOC_FAIL;
     s.err.msg = "Failed to allocate memory when concatenating strings";
     return s;
   }
@@ -398,7 +398,7 @@ u64Result str_to_u64(String s) {
   u64 result = 0;
   if (s.size == 0 || NULL == s.str) {
     res.status = FAIL;
-    res.err.code = INVALID_ARG;
+    res.err.code = ERR_INVALID_ARG;
     res.err.msg = "Cannot cast a null string to u64";
     return res;
   }
@@ -453,7 +453,7 @@ DynStrArrResult insert_back(DynStringArr a, String value) {
     a.arr = realloc(a.arr, a.memsize);
     if (a.arr == NULL) {
       res.status = FAIL;
-      res.err.code = MEM_ALLOC_FAIL;
+      res.err.code = ERR_MEM_ALLOC_FAIL;
       return res;
     }
   }

@@ -5,15 +5,36 @@
 #include "./strings.h"
 #include <stdio.h>
 
+typedef enum PDFObjectType {
+  PDFBoolean = 0;
+  PDFRealNumber = 1;
+  PDFInteger = 2;
+  PDFString = 3
+  PDFName = 4;
+  PDFAreay = 5;
+  PDFDictionary = 6;
+  PDFStream = 7;
+  PDFNull = 8;
+} PDFObjectType;
+
+typedef union {
+
+} PDFObjecfVal;
 
 typedef struct PDFObject {
-
+  PDFObjectType type;
+  PDFObjecfVal val;
 } PDFObject;
 
+typedef struct {
+  PDFObject* arr
+  size_t size;
+  size_t memsize;
+} PDFObjects;
 
 typedef struct {
   String magic_number;
-
+  PDFObjects objects;
 } PDF;
 
 typedef struct {

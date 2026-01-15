@@ -23,7 +23,7 @@ typedef struct {
 
 
 PDFResult parsePDF(FILE* file);
-IOResult writePDF(PDF pdf);
+String writePDF(PDF pdf);
 u8 pdf_equal(PDF pdf1, PDF pdf2);
 
 #ifdef PDF_IMPLEMENTATION
@@ -39,10 +39,12 @@ PDFResult parsePDF(FILE* file) {
   p.status = FAIL;
   return p;
 }
-IOResult writePDF(PDF pdf) {
-  IOResult res;
-  res.status = FAIL;
-  return res;
+
+String writePDF(PDF pdf) {
+  /* TODO */
+  String s;
+  s.size = 0;
+  return s;
 }
 
 u8 pdf_equal(PDF pdf1, PDF pdf2) {

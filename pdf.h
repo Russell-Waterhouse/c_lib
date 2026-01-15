@@ -4,6 +4,13 @@
 #include "./types.h"
 #include "./strings.h"
 #include <stdio.h>
+#include "dictionary.h"
+
+typedef struct {
+  String* strs;
+  size_t size;
+  size_t memsize;
+} Strings; /* TODO: move to strings module */
 
 typedef enum PDFObjectType {
   PDFBoolean = 0;
@@ -11,14 +18,27 @@ typedef enum PDFObjectType {
   PDFInteger = 2;
   PDFString = 3
   PDFName = 4;
-  PDFAreay = 5;
+  PDFArray = 5;
   PDFDictionary = 6;
   PDFStream = 7;
   PDFNull = 8;
 } PDFObjectType;
 
-typedef union {
+typedef struct {
+  u8* bytes;
+  size_t size;
+  size_t memsize;
+} Stream;
 
+typedef union {
+  u8 bool;
+  double real_number;
+  i64 integer;
+  String string;
+  String name;
+  Strings array; /*TODO: should this be strings? */
+  Dictionary dict;
+  Stream stream;
 } PDFObjecfVal;
 
 typedef struct PDFObject {

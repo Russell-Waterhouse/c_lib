@@ -47,6 +47,7 @@ StrResult u64_to_str(u64 v);
 StrResult concat(String s1, String s2);
 DynStrArrResult insert_back(DynStringArr a, String value);
 StrResult cstr_to_str(char* cstr, u64 size);
+StrResult cstr_to_str_unsafe(char* cstr);
 StrResult cstrs_to_str_unsafe(char** cstr);
 IOResult free_str(String s);
 SliceResult slice(String s1, u64 start, u64 end);
@@ -104,6 +105,11 @@ StrResult cstr_to_str(char* cstr, u64 size) {
   res.str.memsize = size;
 
   return res;
+}
+
+
+StrResult cstr_to_str_unsafe(char* cstr) {
+  return cstr_to_str(cstr, strlen(cstr));
 }
 
 IOResult free_str(String s) {

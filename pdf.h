@@ -23,7 +23,7 @@ typedef struct {
 
 
 PDFResult parsePDF(FILE* file);
-String writePDF(PDF pdf);
+StrResult writePDF(PDF pdf);
 u8 pdf_equal(PDF pdf1, PDF pdf2);
 
 #ifdef PDF_IMPLEMENTATION
@@ -40,10 +40,15 @@ PDFResult parsePDF(FILE* file) {
   return p;
 }
 
-String writePDF(PDF pdf) {
-  /* TODO */
-  String s;
-  s.size = 0;
+StrResult writePDF(PDF pdf) {
+  StrResult s;
+  if (pdf.magic_number.size == 0 || NULL == pdf.magic_number.str) {
+    s.status = FAIL;
+    s.err.code = ERR_INVALID_ARG;
+    s.err.msg = "Cannot write PDF with null magic number";
+    return s;
+  }
+  s.status = SUCCESS;
   return s;
 }
 

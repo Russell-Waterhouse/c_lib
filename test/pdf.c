@@ -20,10 +20,9 @@ Result test_null_file_handle_fails() {
 
 Result test_write_minimal_input() {
   PDF pdf;
-  pdf.magic_number = cstr_to_str("1.7", 3).str;
-  String actual = writePDF(pdf);
-  char* s = "%PDF-1.7\n%%EOF";
-  String expected = cstr_to_str(s, strlen(s)).str;
+  pdf.magic_number = cstr_to_str_unsafe("1.7").str;
+  String actual = writePDF(pdf).str;
+  String expected = cstr_to_str_unsafe("%PDF-1.7\n%%EOF").str;
   if (str_equal(expected, actual)) {
     free_str(pdf.magic_number);
     return SUCCESS;

@@ -5,6 +5,7 @@
 #include "./strings.h"
 #include <stdio.h>
 #include "dictionary.h"
+#include "arenas.h"
 
 typedef struct {
   String* strs;
@@ -90,6 +91,23 @@ StrResult writePDF(PDF pdf) {
     s.err.msg = "Cannot write PDF with null magic number";
     return s;
   }
+  /* TODO: the following is just how I want this to look,
+  make it compile */
+  Arena* arena = init_arena(MB(1));
+  DynStingArray strings; /* TODO: somehow put this on an arena */
+  push_str(strings, cstr_to_str_unsafe("%PDF-"));
+  push_str(strings, magic_number);
+  
+  /*pdf parsing goes here*/
+  
+  push_str(strings, print_cross_reference_table());
+  push_str(strings, print_trailer());
+  push_str(strings, cstr_to_str_unsafe("startxref"));
+  push_str(strings, i64_to_str(get_cross_reference_table_offset()));
+  push_str(strings, cstr_to_str_unsafe("%%EOF"));
+
+  s.str = concat_strs(strings);
+  arena_free(arena);
   s.status = SUCCESS;
   return s;
 }

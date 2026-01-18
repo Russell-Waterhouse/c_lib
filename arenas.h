@@ -26,6 +26,7 @@ ArenaResult arena_create(size_t size);
 PointerResult arena_push(Arena* arena, size_t size);
 Result arena_free(Arena* arena);
 
+#endif // ARENAS_H
 #ifdef ARENAS_IMPLEMENTATION
 
 #include "types.h"
@@ -116,5 +117,4 @@ Result arena_free(Arena* arena) {
   return SUCCESS && next_free_res;
 }
 
-#endif
 #endif

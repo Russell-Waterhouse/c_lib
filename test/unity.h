@@ -1,7 +1,3 @@
-#define ARENAS_IMPLEMENTATION
-#include "../arenas.h"
-#define CASTS_IMPLEMENTATION
-#include "../casts.h"
 #define MY_STRINGS_IMPLEMENTATION
 #include "../strings.h"
 #define PRETTY_PRINT_IMPLEMENTATION
@@ -14,3 +10,8 @@
 #include "../dictionary.h"
 #define STRING_LIST_IMPLEMENTATION
 #include "../string_list.h"
+
+#define ARENAS_IMPLEMENTATION
+#include "../arenas.h"
+#define CASTS_IMPLEMENTATION
+#include "../casts.h"

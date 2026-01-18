@@ -46,8 +46,8 @@ String str_at(DynStringArr a, size_t index);
 StrResult u64_to_str(u64 v);
 StrResult concat(String s1, String s2);
 DynStrArrResult insert_back(DynStringArr a, String value);
-StrResult cstr_to_str(char* cstr, u64 size);
-StrResult cstr_to_str_unsafe(char* cstr);
+StrResult cstr_to_str(const char* cstr, u64 size);
+StrResult cstr_to_str_unsafe(const char* cstr);
 StrResult cstrs_to_str_unsafe(char** cstr);
 IOResult free_str(String s);
 SliceResult slice(String s1, u64 start, u64 end);
@@ -85,7 +85,7 @@ Result strip_in_place(String s);
 #include "./implementations/size_t_dynamic_array.c"
 #include "implementations/i64_dynamic_array.c"
 
-StrResult cstr_to_str(char* cstr, u64 size) {
+StrResult cstr_to_str(const char* cstr, u64 size) {
   StrResult res = {0};
   u64 i;
 
@@ -108,7 +108,7 @@ StrResult cstr_to_str(char* cstr, u64 size) {
 }
 
 
-StrResult cstr_to_str_unsafe(char* cstr) {
+StrResult cstr_to_str_unsafe(const char* cstr) {
   return cstr_to_str(cstr, strlen(cstr));
 }
 

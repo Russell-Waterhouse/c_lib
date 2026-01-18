@@ -14,15 +14,15 @@ typedef struct {
 } Strings; /* TODO: move to strings module */
 
 typedef enum PDFObjectType {
-  PDFBoolean = 0;
-  PDFRealNumber = 1;
-  PDFInteger = 2;
-  PDFString = 3
-  PDFName = 4;
-  PDFArray = 5;
-  PDFDictionary = 6;
-  PDFStream = 7;
-  PDFNull = 8;
+  PDFBoolean = 0,
+  PDFRealNumber = 1,
+  PDFInteger = 2,
+  PDFString = 3,
+  PDFName = 4,
+  PDFArray = 5,
+  PDFDictionary = 6,
+  PDFStream = 7,
+  PDFNull = 8,
 } PDFObjectType;
 
 typedef struct {
@@ -48,7 +48,7 @@ typedef struct PDFObject {
 } PDFObject;
 
 typedef struct {
-  PDFObject* arr
+  PDFObject* arr;
   size_t size;
   size_t memsize;
 } PDFObjects;
@@ -70,6 +70,9 @@ StrResult writePDF(PDF pdf);
 u8 pdf_equal(PDF pdf1, PDF pdf2);
 
 #ifdef PDF_IMPLEMENTATION
+
+#include "./string_list.h"
+
 
 PDFResult parsePDF(FILE* file) {
   PDFResult p;
@@ -93,12 +96,20 @@ StrResult writePDF(PDF pdf) {
   }
   /* TODO: the following is just how I want this to look,
   make it compile */
-  Arena* arena = init_arena(MB(1));
-  DynStingArray strings; /* TODO: somehow put this on an arena */
-  push_str(strings, cstr_to_str_unsafe("%PDF-"));
+  ArenaResult arena_result = arena_create(MiB(1));
+  if (arena_result.status != SUCCESS) {
+    s.status = FAIL;
+    s.err.code = arena_result.err.code;
+    s.err.msg = arena_result.err.msg;
+    return s;
+  }
+  Arena* arena = arena_result.arena;
+  /*
+  StringList* strings = NULL;
+  strings = push_str(arena, strings, cstr_to_str_unsafe("%PDF-"));
   push_str(strings, magic_number);
   
-  /*pdf parsing goes here*/
+  // pdf parsing goes here
   
   push_str(strings, print_cross_reference_table());
   push_str(strings, print_trailer());
@@ -107,6 +118,7 @@ StrResult writePDF(PDF pdf) {
   push_str(strings, cstr_to_str_unsafe("%%EOF"));
 
   s.str = concat_strs(strings);
+*/
   arena_free(arena);
   s.status = SUCCESS;
   return s;

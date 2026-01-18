@@ -6,7 +6,7 @@ mkdir -p ./build
 ${fileDirname}
 
 gcc \
-  --std=c89 \
+  --std=c99 \
   -Werror \
   -Wall \
   -Wconversion \

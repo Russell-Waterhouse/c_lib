@@ -12,3 +12,5 @@
 #include "../pdf.h"
 #define DICTIONARY_IMPLEMENTATION
 #include "../dictionary.h"
+#define STRING_LIST_IMPLEMENTATION
+#include "../string_list.h"

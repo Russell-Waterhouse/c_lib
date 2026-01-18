@@ -28,7 +28,6 @@ Result arena_free(Arena* arena);
 
 #ifdef ARENAS_IMPLEMENTATION
 
-#include "./arenas.h"
 #include "types.h"
 #include <stdlib.h>
 

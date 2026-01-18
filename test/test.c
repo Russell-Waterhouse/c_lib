@@ -1,4 +1,3 @@
-#include "./unity.h"
 #include "./strings.c"
 #include "./linked_list.c"
 #include "./dynamic_array.c"
@@ -16,3 +15,5 @@ int main(void) {
   test_dictionary();
   return 0;
 }
+
+#include "./unity.h"

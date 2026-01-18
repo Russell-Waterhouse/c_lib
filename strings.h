@@ -71,6 +71,8 @@ u64 replace_all(String s, String search_str, String replacement_str);
 /* _in_place functions */
 Result strip_in_place(String s);
 
+#endif /* MY_STRINGS_H */
+
 #ifdef  MY_STRINGS_IMPLEMENTATION
 
 #include <stdlib.h>
@@ -78,7 +80,6 @@ Result strip_in_place(String s);
 #include <string.h>
 #include <stddef.h>
 #include "./types.h"
-#include "./strings.h"
 #include "./implementations/size_t_dynamic_array.h"
 #include "implementations/i64_dynamic_array.h"
 #include "./casts.h"
@@ -505,4 +506,3 @@ String at(DynStringArr a, size_t index) {
 }
 
 #endif /*  MY_STRINGS_IMPLEMENTATION */
-#endif /* MY_STRINGS_H */

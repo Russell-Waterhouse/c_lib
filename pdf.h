@@ -69,6 +69,7 @@ PDFResult parsePDF(FILE* file);
 StrResult writePDF(PDF pdf);
 u8 pdf_equal(PDF pdf1, PDF pdf2);
 
+#endif
 #ifdef PDF_IMPLEMENTATION
 
 #include "./string_list.h"
@@ -128,5 +129,4 @@ u8 pdf_equal(PDF pdf1, PDF pdf2) {
   return 0;
 }
 
-#endif
 #endif

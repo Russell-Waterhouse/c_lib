@@ -5,7 +5,6 @@
 #include "./i64_dynamic_array.h"
 
 
-
 i64DynArr i64_dyn_arr_initialize(size_t size) {
   i64DynArr a;
   a.size = size;

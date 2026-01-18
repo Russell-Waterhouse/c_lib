@@ -12,6 +12,8 @@ typedef struct StringListNode {
 
 StringList* push_str(Arena* arena, StringList* head, String new_val);
 
+#endif
+
 #ifdef STRING_LIST_IMPLEMENTATION
 
 StringList* push_str(Arena* arena, StringList* head, String new_val) {
@@ -25,5 +27,4 @@ StringList* push_str(Arena* arena, StringList* head, String new_val) {
 }
 
 
-#endif
 #endif

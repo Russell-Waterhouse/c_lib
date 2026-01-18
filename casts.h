@@ -4,6 +4,8 @@
 
 u64Result i64_to_u64(i64 i);
 
+#endif
+
 #ifdef CASTS_IMPLEMENTATION
 
 u64Result i64_to_u64(i64 i) {
@@ -19,7 +21,4 @@ u64Result i64_to_u64(i64 i) {
   return res;
 }
 
-
 #endif
-#endif
-

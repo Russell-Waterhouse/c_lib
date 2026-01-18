@@ -1,7 +1,7 @@
 #include <stdio.h>
-#include "../templates/dynamic_array.h"
-#include "../types.h"
-#include "../pretty_print.h"
+#include "../data_structures/dynamic_array.h"
+#include "../types/types.h"
+#include "../core/pretty_print.h"
 
 #define one_million (u64)1000000
 #define expected_memsize (u64)0b01 << 20

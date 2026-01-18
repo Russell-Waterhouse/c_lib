@@ -1,11 +1,11 @@
 #ifndef PDF_H
 #define PDF_H
 
-#include "./types.h"
+#include "../types/types.h"
 #include "./strings.h"
 #include <stdio.h>
-#include "dictionary.h"
-#include "arenas.h"
+#include "../data_structures/dictionary.h"
+#include "../memory/arenas.h"
 
 typedef struct {
   String* strs;

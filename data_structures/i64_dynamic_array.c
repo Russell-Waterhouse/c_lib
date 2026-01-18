@@ -1,7 +1,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "../types.h"
+#include "../types/types.h"
 #include "./i64_dynamic_array.h"
 
 

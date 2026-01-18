@@ -2,7 +2,7 @@
 #include <string.h>
 #include "../types/types.h"
 #include "../types/strings.h"
-#include "../pretty_print.h"
+#include "../core/pretty_print.h"
 
 Result test_cstr_to_str() {
   char s1[] = "";

@@ -12,9 +12,11 @@ gcc \
   -Wconversion \
   -fsanitize=undefined \
   ./test/test.c \
-  ./memory/arenas.c \
-  ./types/strings.c \
+  ./memory/*.c \
+  ./types/*.c \
   ./data_structures/*.c \
+  ./core/*.c \
+  ./io/*.c \
   -I. \
   -o \
   ./build/test_lib

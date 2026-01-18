@@ -1,10 +1,8 @@
-#include "../pdf.h"
+#include "../io/pdf.h"
 #include "stdio.h"
-#include "../pretty_print.h"
-#include "../types.h"
-#include "../pdf.h"
+#include "../core/pretty_print.h"
+#include "../types/types.h"
 #include <string.h>
-#include "../strings.h"
 
 Result test_null_file_handle_fails() {
   PDFResult res = parsePDF(NULL);

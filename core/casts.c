@@ -1,12 +1,4 @@
-#ifndef CASTS_H
-#define CASTS_H
-#include "./types.h"
-
-u64Result i64_to_u64(i64 i);
-
-#endif
-
-#ifdef CASTS_IMPLEMENTATION
+#include "casts.h"
 
 u64Result i64_to_u64(i64 i) {
   u64Result res;
@@ -21,4 +13,3 @@ u64Result i64_to_u64(i64 i) {
   return res;
 }
 
-#endif

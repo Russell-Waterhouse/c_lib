@@ -1,9 +1,9 @@
 #ifndef STRING_LIST_H
 #define STRING_LIST_H
 
-#include "./types.h"
-#include "./arenas.h"
-#include "./strings.h"
+#include "../types/types.h"
+#include "../types/strings.h"
+#include "../memory/arenas.h"
 
 typedef struct StringListNode {
     int data;
@@ -11,20 +11,5 @@ typedef struct StringListNode {
 } StringList;
 
 StringList* push_str(Arena* arena, StringList* head, String new_val);
-
-#endif
-
-#ifdef STRING_LIST_IMPLEMENTATION
-
-StringList* push_str(Arena* arena, StringList* head, String new_val) {
-  if (NULL == head) {
-    // TODO: check return values
-    head = (StringList*)arena_push(arena, sizeof(StringList)).val.res;
-    return head;
-  }
-  // TODO: the rest of the function
-  return head;
-}
-
 
 #endif

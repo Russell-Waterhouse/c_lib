@@ -1,7 +1,7 @@
-#include "../dictionary.h"
+#include "../data_structures/dictionary.h"
 #include "stdio.h"
-#include "../pretty_print.h"
-#include "../types.h"
+#include "../core/pretty_print.h"
+#include "../types/types.h"
 
 Result test_empty_dictionary_created() {
   return FAIL;

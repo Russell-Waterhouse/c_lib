@@ -1,6 +1,6 @@
-#include "../types.h"
-#include "../arenas.h"
-#include "../pretty_print.h"
+#include "../types/types.h"
+#include "../memory/arenas.h"
+#include "../core/pretty_print.h"
 
 
 Result test_create() {

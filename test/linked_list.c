@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "../templates/linked_list.c"
-#include "../types.h"
-#include "../pretty_print.h"
+#include "../data_structures/linked_list.h"
+#include "../types/types.h"
+#include "../core/pretty_print.h"
 
 Result test_insert() {
   u64 i;
-  Node* head = insert_front(NULL, 0);
+  Node* head = GENERIC_TYPE_insert_front(NULL, 0);
   for(i = 0; i < 8; i++) {
-    head = insert_front(head, i);
+    head = GENERIC_TYPE_insert_front(head, i);
   }
   Node* curr = head;
   u64 max = 0;

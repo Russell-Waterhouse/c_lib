@@ -10,7 +10,10 @@ typedef struct StringListNode {
     struct StringListNode *next;
 } StringList;
 
+StringList* push_str(Arena* arena, StringList* head, String new_val);
+
 #ifdef STRING_LIST_IMPLEMENTATION
+
 StringList* push_str(Arena* arena, StringList* head, String new_val) {
   if (NULL == head) {
     // TODO: check return values

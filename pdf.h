@@ -87,7 +87,7 @@ PDFResult parsePDF(FILE* file) {
 }
 
 StrResult writePDF(PDF pdf) {
-  StrResult s;
+  StrResult s = {0};
   if (pdf.magic_number.size == 0 || NULL == pdf.magic_number.str) {
     s.status = FAIL;
     s.err.code = ERR_INVALID_ARG;
@@ -104,9 +104,9 @@ StrResult writePDF(PDF pdf) {
     return s;
   }
   Arena* arena = arena_result.arena;
-  /*
   StringList* strings = NULL;
-  strings = push_str(arena, strings, cstr_to_str_unsafe("%PDF-"));
+  strings = push_str(arena, strings, cstr_to_str_arena_unsafe(arena, "%PDF-").str);
+  /*
   push_str(strings, magic_number);
   
   // pdf parsing goes here

@@ -70,7 +70,7 @@ u64 replace_all(String s, String search_str, String replacement_str);
 
 /* _in_place functions */
 Result strip_in_place(String s);
-#define MY_STRINGS_IMPLEMENTATION
+
 #ifdef  MY_STRINGS_IMPLEMENTATION
 
 #include <stdlib.h>

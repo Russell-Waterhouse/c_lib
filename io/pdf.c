@@ -40,10 +40,10 @@ StrResult writePDF(PDF pdf) {
   }
   Arena* arena = arena_result.arena;
   StringList* strings = NULL;
-  strings = push_str(arena, strings, cstr_to_str_arena_unsafe(arena, "%PDF-").str);
+  strings = push_back_str(arena, strings, cstr_to_str_arena_unsafe(arena, "%PDF-").str);
+  strings = push_back_str(arena, strings, pdf.magic_number);
+
   /*
-  push_str(strings, magic_number);
-  
   // pdf parsing goes here
   
   push_str(strings, print_cross_reference_table());
@@ -52,8 +52,8 @@ StrResult writePDF(PDF pdf) {
   push_str(strings, i64_to_str(get_cross_reference_table_offset()));
   push_str(strings, cstr_to_str_unsafe("%%EOF"));
 
+  */
   s.str = concat_strs(strings);
-*/
   arena_free(arena);
   s.status = SUCCESS;
   return s;

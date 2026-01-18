@@ -6,10 +6,11 @@
 #include "../memory/arenas.h"
 
 typedef struct StringListNode {
-    int data;
+    String data;
     struct StringListNode *next;
 } StringList;
 
-StringList* push_str(Arena* arena, StringList* head, String new_val);
+StringList* push_back_str(Arena* arena, StringList* head, String new_val);
+String concat_strs(StringList* head);
 
 #endif

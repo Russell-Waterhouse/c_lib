@@ -19,14 +19,19 @@ Result test_null_file_handle_fails() {
 Result test_write_minimal_input() {
   PDF pdf;
   pdf.magic_number = cstr_to_str_unsafe("1.7").str;
-  String actual = writePDF(pdf).str;
+  StrResult res = writePDF(pdf);
+  String actual = res.str;
   String expected = cstr_to_str_unsafe("%PDF-1.7\n%%EOF").str;
   if (str_equal(expected, actual)) {
     free_str(pdf.magic_number);
+    free_str(actual);
+    free_str(expected);
     return SUCCESS;
   }
 
   free_str(pdf.magic_number);
+  free_str(actual);
+  free_str(expected);
   return FAIL;
 }
 

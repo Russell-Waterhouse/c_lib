@@ -5,6 +5,7 @@
 #include "./types.h"
 #include "implementations/size_t_dynamic_array.h"
 #include "implementations/i64_dynamic_array.h"
+#include "./arenas.h"
 
 typedef struct {
   size_t size;
@@ -48,6 +49,7 @@ StrResult concat(String s1, String s2);
 DynStrArrResult insert_back(DynStringArr a, String value);
 StrResult cstr_to_str(const char* cstr, u64 size);
 StrResult cstr_to_str_unsafe(const char* cstr);
+StrResult cstr_to_str_arena_unsafe(Arena* arena, const char* cstr);
 StrResult cstrs_to_str_unsafe(char** cstr);
 IOResult free_str(String s);
 SliceResult slice(String s1, u64 start, u64 end);
@@ -68,7 +70,7 @@ u64 replace_all(String s, String search_str, String replacement_str);
 
 /* _in_place functions */
 Result strip_in_place(String s);
-
+#define MY_STRINGS_IMPLEMENTATION
 #ifdef  MY_STRINGS_IMPLEMENTATION
 
 #include <stdlib.h>
@@ -112,6 +114,29 @@ StrResult cstr_to_str_unsafe(const char* cstr) {
   return cstr_to_str(cstr, strlen(cstr));
 }
 
+StrResult cstr_to_str_arena_unsafe(Arena* arena, const char* cstr) {
+  StrResult res;
+  u64 i;
+  size_t size = strlen(cstr);
+  size_t memsize = sizeof(char) * size;
+  PointerResult p = arena_push(arena, memsize);
+  if (p.status != SUCCESS) {
+    res.status = FAIL;
+    res.err.code = p.val.err.code;
+    res.err.msg = p.val.err.msg;
+    return res;
+  }
+  res.str.str = (char*)p.val.res;
+  for(i = 0; i < size; i++) {
+    res.str.str[i] = cstr[i];
+  }
+  res.status = SUCCESS;
+  res.str.size = size;
+  res.str.memsize = memsize;
+  return res;
+}
+
+
 IOResult free_str(String s) {
   IOResult res = {0};
   if (NULL == s.str) {
@@ -153,7 +178,7 @@ StrResult concat(String s1, String s2) {
   }
   size = s1.size + s2.size;
 
-  s.str.str = calloc(size, sizeof(char));
+  s.str.str = (char*)calloc(size, sizeof(char));
   if (NULL == s.str.str) {
     s.status = FAIL;
     s.err.code = ERR_MEM_ALLOC_FAIL;
@@ -456,7 +481,7 @@ DynStrArrResult insert_back(DynStringArr a, String value) {
     } else {
       a.memsize *= 2;
     }
-    a.arr = realloc(a.arr, a.memsize);
+    a.arr = (String*)realloc(a.arr, a.memsize);
     if (a.arr == NULL) {
       res.status = FAIL;
       res.err.code = ERR_MEM_ALLOC_FAIL;

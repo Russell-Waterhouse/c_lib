@@ -1,4 +1,5 @@
 #ifndef STRING_LIST_H
+#define STRING_LIST_H
 
 #include "./types.h"
 #include "./arenas.h"

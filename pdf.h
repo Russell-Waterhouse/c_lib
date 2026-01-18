@@ -32,7 +32,7 @@ typedef struct {
 } Stream;
 
 typedef union {
-  u8 bool;
+  u8 boolean;
   double real_number;
   i64 integer;
   String string;

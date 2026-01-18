@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
-#include "../types.h"
-#include "../strings.h"
+#include "../types/types.h"
+#include "../types/strings.h"
 #include "../pretty_print.h"
 
 Result test_cstr_to_str() {

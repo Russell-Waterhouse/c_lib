@@ -1,12 +1,9 @@
-
 #include "../types/types.h"
 #include "../types/strings.h"
 #include <stdio.h>
 #include "../data_structures/string_list.h"
 #include "../memory/arenas.h"
 #include "pdf.h"
-
-
 
 
 PDFResult parsePDF(FILE* file) {
@@ -40,13 +37,14 @@ StrResult writePDF(PDF pdf) {
   }
   Arena* arena = arena_result.arena;
   StringList* strings = push_back_str(arena, NULL, cstr_to_str_arena_unsafe(arena, "\%PDF-").str);
-  strings = push_back_str(arena, strings, pdf.magic_number);
-  strings = push_back_str(arena, strings, cstr_to_str_arena_unsafe(arena, "\n").str);
+  push_back_str(arena, strings, pdf.magic_number);
+  push_back_str(arena, strings, cstr_to_str_arena_unsafe(arena, "\n").str);
+  // TODO: handle results
+  // push_back_str(arena, strings, print_cross_reference_table(pdf).str);
 
   /*
   // pdf parsing goes here
   
-  push_str(strings, print_cross_reference_table());
   push_str(strings, print_trailer());
   push_str(strings, cstr_to_str_unsafe("startxref"));
   push_str(strings, i64_to_str(get_cross_reference_table_offset()));
@@ -63,3 +61,10 @@ u8 pdf_equal(PDF pdf1, PDF pdf2) {
   return 0;
 }
 
+StrResult print_cross_reference_table(Arena* arena, PDF pdf) {
+  StrResult s = {0};
+
+
+  s.status = SUCCESS;
+  return s;
+}

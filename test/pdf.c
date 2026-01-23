@@ -21,7 +21,7 @@ Result test_write_minimal_input() {
   pdf.magic_number = cstr_to_str_unsafe("1.7").str;
   StrResult res = writePDF(pdf);
   String actual = res.str;
-  String expected = cstr_to_str_unsafe("%PDF-1.7\n%%EOF").str;
+  String expected = cstr_to_str_unsafe("\%PDF-1.7\n%%EOF").str;
   if (str_equal(expected, actual)) {
     free_str(pdf.magic_number);
     free_str(actual);

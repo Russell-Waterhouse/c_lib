@@ -31,9 +31,6 @@ StringList* push_back_str(Arena* arena, StringList* head, String new_val) {
   }
 
   // TODO: check return values
-  size_t s = sizeof(StringList);
-  size_t t = sizeof(StringList*);
-  printf("%lu, %lu\n", s, t);
   cur -> next = (StringList*)arena_push(arena, sizeof(StringList)).val.res;
 
   cur -> next -> next = NULL;

@@ -39,11 +39,9 @@ StrResult writePDF(PDF pdf) {
     return s;
   }
   Arena* arena = arena_result.arena;
-  StringList* strings = NULL;
-  strings = push_back_str(arena, strings, cstr_to_str_arena_unsafe(arena, "\%PDF-").str);
-  print_strings(strings);
+  StringList* strings = push_back_str(arena, NULL, cstr_to_str_arena_unsafe(arena, "\%PDF-").str);
   strings = push_back_str(arena, strings, pdf.magic_number);
-  print_strings(strings);
+  strings = push_back_str(arena, strings, cstr_to_str_arena_unsafe(arena, "\n").str);
 
   /*
   // pdf parsing goes here
@@ -52,9 +50,9 @@ StrResult writePDF(PDF pdf) {
   push_str(strings, print_trailer());
   push_str(strings, cstr_to_str_unsafe("startxref"));
   push_str(strings, i64_to_str(get_cross_reference_table_offset()));
-  push_str(strings, cstr_to_str_unsafe("%%EOF"));
-
+  
   */
+  push_back_str(arena, strings, cstr_to_str_arena_unsafe(arena, "\%\%EOF").str);
   s.str = concat_strs(strings);
   arena_free(arena);
   s.status = SUCCESS;

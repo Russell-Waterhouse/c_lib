@@ -4,6 +4,7 @@
 #include "./arenas.c"
 #include "./pdf.c"
 #include "./dictionary.c"
+#include "./unity.h"
 
 
 int main(void) {

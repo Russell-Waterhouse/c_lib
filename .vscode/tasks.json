@@ -12,11 +12,6 @@
                 "-Wall",
                 "-Wconversion",
                 "${file}",
-                "/home/russ/repos/personal/c_lib/memory/arenas.c",
-                "/home/russ/repos/personal/c_lib/types/strings.c",
-                "/home/russ/repos/personal/c_lib/data_structures/*.c",
-                "/home/russ/repos/personal/c_lib/core/*.c",
-                "/home/russ/repos/personal/c_lib/io/*.c",
                 "-I.",
                 "-o",
                 "/home/russ/repos/personal/c_lib/build/${fileBasenameNoExtension}"

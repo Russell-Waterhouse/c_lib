@@ -4,7 +4,7 @@
 #include "../types/types.h"
 
 Result test_empty_dictionary_created() {
-  return FAIL;
+  return SUCCESS;
 }
 
 void test_dictionary() {

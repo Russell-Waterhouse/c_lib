@@ -15,7 +15,7 @@ StrResult cstr_to_str(const char* cstr, u64 size) {
   StrResult res = {0};
   u64 i;
 
-  res.str.str = (char*)calloc(size, sizeof(char));
+  res.str.str = (char*)calloc(size + 1, sizeof(char));
   if (NULL == res.str.str) {
     res.status = FAIL;
     res.err.code = ERR_MEM_ALLOC_FAIL;
@@ -26,6 +26,7 @@ StrResult cstr_to_str(const char* cstr, u64 size) {
   for(i = 0; i < size; i++) {
     res.str.str[i] = cstr[i];
   }
+  res.str.str[size] = '\0';
   res.status = SUCCESS;
   res.str.size = size;
   res.str.memsize = size;

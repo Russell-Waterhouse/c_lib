@@ -1,5 +1,21 @@
 #include "./string_list.h"
 
+void print_strings(StringList* head) {
+  if (NULL == head) {
+    puts("Cannot print null stringList");
+    return;
+  }
+
+  StringList* s = head;
+  while (NULL != s) {
+    printf("String: %s\n", s->data.str);
+    fflush(stdout);
+    s = s->next;
+  }
+  return;
+}
+
+
 StringList* push_back_str(Arena* arena, StringList* head, String new_val) {
   if (NULL == head) {
     // TODO: check return values
@@ -15,10 +31,13 @@ StringList* push_back_str(Arena* arena, StringList* head, String new_val) {
   }
 
   // TODO: check return values
+  size_t s = sizeof(StringList);
+  size_t t = sizeof(StringList*);
+  printf("%lu, %lu\n", s, t);
   cur -> next = (StringList*)arena_push(arena, sizeof(StringList)).val.res;
 
   cur -> next -> next = NULL;
-  cur -> data = new_val;
+  cur -> next -> data = new_val;
   return head;
 }
 

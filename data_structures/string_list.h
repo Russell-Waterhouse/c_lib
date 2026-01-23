@@ -12,5 +12,6 @@ typedef struct StringListNode {
 
 StringList* push_back_str(Arena* arena, StringList* head, String new_val);
 String concat_strs(StringList* head);
+void print_strings(StringList* head);
 
 #endif

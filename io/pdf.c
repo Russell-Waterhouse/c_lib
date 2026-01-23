@@ -40,8 +40,10 @@ StrResult writePDF(PDF pdf) {
   }
   Arena* arena = arena_result.arena;
   StringList* strings = NULL;
-  strings = push_back_str(arena, strings, cstr_to_str_arena_unsafe(arena, "%PDF-").str);
+  strings = push_back_str(arena, strings, cstr_to_str_arena_unsafe(arena, "\%PDF-").str);
+  print_strings(strings);
   strings = push_back_str(arena, strings, pdf.magic_number);
+  print_strings(strings);
 
   /*
   // pdf parsing goes here

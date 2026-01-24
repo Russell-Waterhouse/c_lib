@@ -161,7 +161,7 @@ u8 starts_with(String s, String search_str) {
 
 i64DynArr make_kmp_fail_table(String w) {
   i64 pos, cnd;
-  i64DynArr t = i64_dyn_arr_initialize(w.size + 1);
+  i64DynArr t = i64_dyn_arr_initialize(w.size + 2);
   pos = 1;
   cnd = 0;
 
@@ -197,6 +197,7 @@ i64 find_first(String s, String search_str) {
   /*initializing t */
   t = make_kmp_fail_table(search_str);
   if (s.size < search_str.size || NULL == s.str || NULL == search_str.str) {
+    i64_free(t);
     return -1;
   }
 
@@ -207,6 +208,7 @@ i64 find_first(String s, String search_str) {
       j++;
       k++;
       if (k == search_str.size) {
+        i64_free(t);
         return j - k;
       }
     } else {
@@ -218,6 +220,7 @@ i64 find_first(String s, String search_str) {
     }
   }
 
+  i64_free(t);
   return -1;
 }
 
@@ -232,6 +235,7 @@ SizeTDynArr find_all(String s, String search_str) {
   t = make_kmp_fail_table(search_str);
   SizeTDynArr found_positions = {0};
   if (s.size < search_str.size || NULL == s.str || NULL == search_str.str) {
+    i64_free(t);
     return found_positions;
   }
 
@@ -256,7 +260,7 @@ SizeTDynArr find_all(String s, String search_str) {
     }
   }
 
-
+  i64_free(t);
   return found_positions;
 }
 
@@ -418,6 +422,14 @@ DynStrArrResult insert_back(DynStringArr a, String value) {
   res.dyn_arr = a;
   res.status = SUCCESS;
   return res;
+}
+
+void free_dyn_str_arr(DynStringArr a) {
+  if (a.memsize < 1 || NULL == a.arr) {
+    return;
+  }
+
+  free(a.arr);
 }
 
 String at(DynStringArr a, size_t index) {

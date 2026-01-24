@@ -16,6 +16,5 @@ gcc \
   -o \
   ./build/test_lib
 
-./build/test_lib
-
+valgrind --leak-check=full --show-leak-kinds=all ./build/test_lib
 

@@ -54,8 +54,24 @@ Result test_split() {
     str_equal(e2, r2) &&
     str_equal(e3, r3)
   ) {
+    free_str(s1);
+    free_str(e1);
+    free_str(e2);
+    free_str(e3);
+    free_str(r1);
+    free_str(r2);
+    free_str(r3);
+    free_dyn_str_arr(split_strings.strs);
     return SUCCESS;
   }
+  free_str(s1);
+  free_str(e1);
+  free_str(e2);
+  free_str(e3);
+  free_str(r1);
+  free_str(r2);
+  free_str(r3);
+  free_dyn_str_arr(split_strings.strs);
   return FAIL;
 }
 
@@ -171,6 +187,7 @@ Result test_find_all() {
     return FAIL;
   }
   free_structs(s, w, res);
+
   cstr_s = "ABABABABAB";
   cstr_w = "AB";
   s = cstr_to_str(cstr_s, strlen(cstr_s)).str;

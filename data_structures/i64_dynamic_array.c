@@ -9,7 +9,7 @@ i64DynArr i64_dyn_arr_initialize(size_t size) {
   i64DynArr a;
   a.size = size;
   a.memsize = size;
-  a.arr = calloc(size, sizeof(size_t));
+  a.arr = calloc(size, sizeof(i64));
   if (NULL == a.arr) {
     puts("Failed to allocate requested memory for array");
     exit(-1);
@@ -53,9 +53,11 @@ i64 i64_at_or_die(i64DynArr a, size_t index) {
 
 void i64_free(i64DynArr a) {
   if (NULL == a.arr) {
+    puts("Not freeing null array");
     return;
   }
 
+  puts("Freeing the i64 dyn array");
   free(a.arr);
   a.arr = NULL;
 }

@@ -16,10 +16,13 @@ Result test_insert() {
   for(i = 7; i != max; i--) {
     if (curr -> value != i) {
       printf("TEST FAIL: %lu != %lu\n", curr -> value, i);
+      GENERIC_TYPE_free_list(head);
       return FAIL;
     }
     curr = curr -> next;
   }
+
+  GENERIC_TYPE_free_list(head);
   puts("Insertion test completed.");
   return SUCCESS;
 }

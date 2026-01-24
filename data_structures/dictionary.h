@@ -3,13 +3,16 @@
 #include "../types/strings.h"
 #include "../types/types.h"
 
-/*
- * String key-value pairs
- */
 typedef struct {
+  String key;
+  String val;
+} DictEntry;
 
+typedef struct {
+  size_t size;
+  size_t memsize;
+  DictEntry* entries;
 } Dictionary;
-
 
 Result dict_upsert(Dictionary* dict, String key, String val);
 String dict_get(Dictionary* dict, String key);

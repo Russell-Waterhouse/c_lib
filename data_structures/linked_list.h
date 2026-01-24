@@ -16,4 +16,5 @@ Node* GENERIC_TYPE_insert_front(Node* head, GENERIC_TYPE value);
 
 /* Returns the head node of a new list with the deleted item deleted. */
 Node* GENERIC_TYPE_delete(Node* head, Node* delete_node);
+void GENERIC_TYPE_free_list(Node* head);
 #endif

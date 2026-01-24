@@ -47,6 +47,7 @@ String str_at(DynStringArr a, size_t index);
 StrResult u64_to_str(u64 v);
 StrResult concat(String s1, String s2);
 DynStrArrResult insert_back(DynStringArr a, String value);
+void free_dyn_str_arr(DynStringArr a);
 StrResult cstr_to_str(const char* cstr, u64 size);
 StrResult cstr_to_str_unsafe(const char* cstr);
 StrResult cstr_to_str_arena_unsafe(Arena* arena, const char* cstr);

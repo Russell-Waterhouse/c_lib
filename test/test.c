@@ -1,10 +1,10 @@
-#include "./strings.c"
-#include "./linked_list.c"
-#include "./dynamic_array.c"
-#include "./arenas.c"
-#include "./pdf.c"
-#include "./dictionary.c"
-#include "./unity.h"
+#include "strings.c"
+#include "linked_list.c"
+#include "dynamic_array.c"
+#include "arenas.c"
+#include "pdf.c"
+#include "dictionary.c"
+#include "unity.h"
 
 
 int main(void) {

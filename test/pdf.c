@@ -27,11 +27,13 @@ Result test_cross_reference_table() {
     free_str(pdf.magic_number);
     free_str(actual);
     free_str(expected);
+    arena_free(arena);
     return SUCCESS;
   }
   free_str(pdf.magic_number);
   free_str(actual);
   free_str(expected);
+  arena_free(arena);
   return SUCCESS;
 }
 

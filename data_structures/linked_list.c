@@ -4,7 +4,7 @@
 
 Node* GENERIC_TYPE_insert_front(Node* head, GENERIC_TYPE value) {
   Node* node;
-  node = malloc(sizeof(*node));
+  node = (Node*)malloc(sizeof(Node));
   if (NULL == node) {
     printf("Failed to allocate memory for node");
     exit(-1);
@@ -39,4 +39,20 @@ Node* GENERIC_TYPE_delete(Node* head, Node* delete_node) {
 
   printf("Called delete on a list that did not containt the target node. Crashing");
   exit(-1);
+}
+
+void GENERIC_TYPE_free_list(Node* head) {
+  if (NULL == head) {
+    return;
+  }
+
+  Node* prev = head;
+  Node* curr = head->next;
+  while (prev != NULL) {
+    free(prev);
+    prev = curr;
+    if (NULL != curr) {
+      curr = curr->next;
+    }
+  }
 }

@@ -7,7 +7,7 @@
 
 typedef struct StringListNode {
     String data;
-    struct StringListNode *next;
+    struct StringListNode* next;
 } StringList;
 
 StringList* push_back_str(Arena* arena, StringList* head, String new_val);

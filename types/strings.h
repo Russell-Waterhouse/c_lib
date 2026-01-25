@@ -42,19 +42,19 @@ typedef struct {
 } DynStrArrResult;
 
 
-/* save optional/result type functions */
+void pretty_print_string(String s);
+/* safe optional/result type functions */
 String str_at(DynStringArr a, size_t index);
-StrResult u64_to_str(u64 v);
-StrResult concat(String s1, String s2);
+StrResult u64_to_str(Arena* arena, u64 v);
+StrResult concat(Arena* arena, String s1, String s2);
 DynStrArrResult insert_back(DynStringArr a, String value);
 void free_dyn_str_arr(DynStringArr a);
-StrResult cstr_to_str(const char* cstr, u64 size);
-StrResult cstr_to_str_unsafe(const char* cstr);
+StrResult cstr_to_str(Arena* arena, const char* cstr, u64 size);
+StrResult cstr_to_str_unsafe(Arena* arena, const char* cstr);
 StrResult cstr_to_str_arena_unsafe(Arena* arena, const char* cstr);
 StrResult cstrs_to_str_unsafe(char** cstr);
-IOResult free_str(String s);
-SliceResult slice(String s1, u64 start, u64 end);
-SplitResultOption split_str(String s, char split_char);
+SliceResult slice(Arena* arena, String s, u64 start, u64 end);
+SplitResultOption split_str(Arena* arena, String s, char split_char);
 u8 str_equal(String s1, String s2);
 u64Result str_to_u64(String s);
 String trim(String s);

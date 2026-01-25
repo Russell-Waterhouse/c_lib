@@ -20,39 +20,32 @@ Result test_cross_reference_table() {
   // TODO: START HERE
   PDF pdf;
   Arena* arena = arena_create(MiB(1)).arena;
-  pdf.magic_number = cstr_to_str_unsafe("1.7").str;
+  pdf.magic_number = cstr_to_str_unsafe(arena, "1.7").str;
   String actual = print_cross_reference_table(arena, pdf).str;
-  String expected = cstr_to_str_unsafe("").str;
+  String expected = cstr_to_str_unsafe(arena, "").str;
   if (str_equal(expected, actual)) {
-    free_str(pdf.magic_number);
-    free_str(actual);
-    free_str(expected);
     arena_free(arena);
     return SUCCESS;
   }
-  free_str(pdf.magic_number);
-  free_str(actual);
-  free_str(expected);
   arena_free(arena);
   return SUCCESS;
 }
 
 Result test_write_minimal_input() {
+  Arena* arena = arena_create(KiB(10)).arena;
   PDF pdf;
-  pdf.magic_number = cstr_to_str_unsafe("1.7").str;
-  StrResult res = writePDF(pdf);
+  pdf.magic_number = cstr_to_str_unsafe(arena, "1.7").str;
+  StrResult res = writePDF(arena, pdf);
   String actual = res.str;
-  String expected = cstr_to_str_unsafe("\%PDF-1.7\n%%EOF").str;
+  String expected = cstr_to_str_unsafe(arena, "\%PDF-1.7\n%%EOF").str;
+  pretty_print_string(expected);
+  pretty_print_string(actual);
   if (str_equal(expected, actual)) {
-    free_str(pdf.magic_number);
-    free_str(actual);
-    free_str(expected);
+    arena_free(arena);
     return SUCCESS;
   }
 
-  free_str(pdf.magic_number);
-  free_str(actual);
-  free_str(expected);
+  arena_free(arena);
   return FAIL;
 }
 

@@ -9,19 +9,21 @@
 #include <string.h>
 #include "../core/casts.h"
 #include "./strings.h"
+#include "../memory/arenas.h"
 
 
-StrResult cstr_to_str(const char* cstr, u64 size) {
+StrResult cstr_to_str(Arena* arena, const char* cstr, u64 size) {
   StrResult res = {0};
   u64 i;
 
-  res.str.str = (char*)calloc(size + 1, sizeof(char));
-  if (NULL == res.str.str) {
+  PointerResult p = arena_push(arena, sizeof(char) * (size + 1));
+  if (p.status != SUCCESS) {
     res.status = FAIL;
-    res.err.code = ERR_MEM_ALLOC_FAIL;
-    res.err.msg = "Failed to allocate memory for string in __FUNCTION__";
+    res.err.code = p.val.err.code;
+    res.err.msg = p.val.err.msg;
     return res;
   }
+  res.str.str = (char*)p.val.res;
 
   for(i = 0; i < size; i++) {
     res.str.str[i] = cstr[i];
@@ -35,8 +37,8 @@ StrResult cstr_to_str(const char* cstr, u64 size) {
 }
 
 
-StrResult cstr_to_str_unsafe(const char* cstr) {
-  return cstr_to_str(cstr, strlen(cstr));
+StrResult cstr_to_str_unsafe(Arena* arena, const char* cstr) {
+  return cstr_to_str(arena, cstr, strlen(cstr));
 }
 
 StrResult cstr_to_str_arena_unsafe(Arena* arena, const char* cstr) {
@@ -62,33 +64,20 @@ StrResult cstr_to_str_arena_unsafe(Arena* arena, const char* cstr) {
 }
 
 
-IOResult free_str(String s) {
-  IOResult res = {0};
-  if (NULL == s.str) {
-    res.status = FAIL;
-    res.err.code = ERR_INVALID_ARG;
-    res.err.msg = "Attempting to free a null string at __LINE__";
-    return res;
-  }
-  free(s.str);
-  res.status = SUCCESS;
-  return res;
-}
-
-u8 str_equal(String s, String s2) {
+u8 str_equal(String s1, String s2) {
   u64 i;
-  if (s.size != s2.size) {
+  if (s1.size != s2.size) {
     return 0;
   }
-  for(i = 0; i < s.size; i++) {
-    if (s.str[i] != s2.str[i]) {
+  for(i = 0; i < s1.size; i++) {
+    if (s1.str[i] != s2.str[i]) {
       return 0;
     }
   }
   return 1;
 }
 
-StrResult concat(String s1, String s2) {
+StrResult concat(Arena* arena, String s1, String s2) {
   u64 i, j;
   StrResult s = {0};
   u64 size;
@@ -103,13 +92,14 @@ StrResult concat(String s1, String s2) {
   }
   size = s1.size + s2.size;
 
-  s.str.str = (char*)calloc(size, sizeof(char));
-  if (NULL == s.str.str) {
+  PointerResult p = arena_push(arena, size);
+  if (p.status != SUCCESS) {
     s.status = FAIL;
-    s.err.code = ERR_MEM_ALLOC_FAIL;
-    s.err.msg = "Failed to allocate memory when concatenating strings";
+    s.err.code = p.val.err.code;
+    s.err.msg = p.val.err.msg;
     return s;
   }
+  s.str.str = p.val.res;
 
   for(i = 0; i < s1.size; i++) {
     s.str.str[i] = s1.str[i];
@@ -268,7 +258,7 @@ u64 replace_first(String s, String search_str, String replacement_str);
 u64 replace_all(String s, String search_str, String replacement_str);
 
 
-SliceResult slice(String s, u64 start, u64 end) {
+SliceResult slice(Arena* arena, String s, u64 start, u64 end) {
   SliceResult res;
   u64 i;
   u64 size;
@@ -280,12 +270,13 @@ SliceResult slice(String s, u64 start, u64 end) {
   }
   size = end - start;
 
-  slice.str = (char*)calloc(size, sizeof(char));
-  if (NULL == slice.str) {
+  PointerResult p = arena_push(arena, size);
+  if (p.status != SUCCESS) {
     puts("Failed to allocate memory for string slice");
     res.status = FAIL;
     return res;
   }
+  slice.str = p.val.res;
 
   for(i = 0; i < end - start; i++) {
     slice.str[i] = s.str[i+start];
@@ -297,7 +288,7 @@ SliceResult slice(String s, u64 start, u64 end) {
   return res;
 }
 
-SplitResultOption split_str(String s, char split_char) {
+SplitResultOption split_str(Arena* arena, String s, char split_char) {
   SplitResultOption res;
   DynStrArrResult strs = {0};
   u64 i;
@@ -306,7 +297,7 @@ SplitResultOption split_str(String s, char split_char) {
   start = 0;
   for (i = 0; i < s.size; i++) {
     if (s.str[i] == split_char) {
-      SliceResult slice_result = slice(s, start, i);
+      SliceResult slice_result = slice(arena, s, start, i);
       if (slice_result.status == FAIL) {
         res.status = FAIL;
         return res;
@@ -320,7 +311,7 @@ SplitResultOption split_str(String s, char split_char) {
     }
   }
   if (start != i) {
-      SliceResult slice_result = slice(s, start, i);
+      SliceResult slice_result = slice(arena, s, start, i);
       if (slice_result.status == FAIL) {
         res.status = FAIL;
         return res;
@@ -385,11 +376,11 @@ u64Result str_to_u64(String s) {
 }
 
 
-StrResult u64_to_str(u64 v) {
+StrResult u64_to_str(Arena* arena, u64 v) {
   /* u64 has a max of 20 digits */
   char str[32];
   sprintf(str, "%lu", v);
-  return cstr_to_str(str, strlen(str));
+  return cstr_to_str(arena, str, strlen(str));
 }
 
 
@@ -439,4 +430,14 @@ String at(DynStringArr a, size_t index) {
   }
 
   return a.arr[index];
+}
+
+
+void pretty_print_string(String s) {
+  if (s.size > 0 && s.memsize > 0) {
+    printf("[String] Size: %lu; memsize: %lu; value: %s\n", s.size, s.memsize, s.str);
+    return;
+  }
+
+  printf("[String] Size: %lu; memsize: %lu; value: <NOT PRINTED BECAUSE NOT ALLOCED>\n", s.size, s.memsize);
 }

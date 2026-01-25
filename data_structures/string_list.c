@@ -38,7 +38,7 @@ StringList* push_back_str(Arena* arena, StringList* head, String new_val) {
 }
 
 
-String concat_strs(StringList* head) {
+String concat_strs(Arena* arena, StringList* head) {
   size_t full_len = 0;
   StringList* cur = head;
   while (NULL != cur) {
@@ -50,7 +50,13 @@ String concat_strs(StringList* head) {
     .memsize = (sizeof(char) * full_len) + 1, // + 1 for \0
     .str = NULL
   };
-  res.str = malloc(res.memsize);
+  PointerResult p = arena_push(arena, res.memsize);
+  if (p.status != SUCCESS) {
+    printf("TODO: Handle failed arena push");
+    return res;
+  }
+
+  res.str = p.val.res;
   // TODO: check not null
   cur = head;
   size_t i = 0;

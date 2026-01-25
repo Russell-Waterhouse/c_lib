@@ -53,11 +53,9 @@ i64 i64_at_or_die(i64DynArr a, size_t index) {
 
 void i64_free(i64DynArr a) {
   if (NULL == a.arr) {
-    puts("Not freeing null array");
     return;
   }
 
-  puts("Freeing the i64 dyn array");
   free(a.arr);
   a.arr = NULL;
 }

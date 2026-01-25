@@ -66,7 +66,7 @@ typedef struct {
 
 
 PDFResult parsePDF(FILE* file);
-StrResult writePDF(PDF pdf);
+StrResult writePDF(Arena* arena, PDF pdf);
 StrResult print_cross_reference_table(Arena* arena, PDF pdf);
 u8 pdf_equal(PDF pdf1, PDF pdf2);
 

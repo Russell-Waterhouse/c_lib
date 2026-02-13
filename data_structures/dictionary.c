@@ -4,14 +4,23 @@
 #include "dictionary.h"
 
 
-Dictionary* dict_upsert(Arena* arena, Dictionary* dict, String key, String val) {
+DictionaryResult* dict_upsert(Arena* arena, Dictionary* dict, String key, String val) {
+  DictionaryResult* res = {0};
   if (NULL == dict) {
-    // TODO: Check return values;
-    dict = (Dictionary*)arena_push(arena, sizeof(Dictionary)).val.res;
+    // TODO: this is programmingon my phone, doesn't compile.
+    allocResult = (Dictionary*)arena_push(arena, sizeof(Dictionary));
+    if (dict.status == FAIL) {
+      res.status = FAIL;
+      res.err = allocResult.val.err;
+      return res;
+    }
+    dict = allocResult.val;
     dict -> next = NULL;
     dict -> key = key;
     dict -> val = val;
-    return dict;
+    res.status = SUCCESS;
+    res.dict = dict;
+    return res;
   }
 
   Dictionary* curr = dict;
@@ -23,7 +32,9 @@ Dictionary* dict_upsert(Arena* arena, Dictionary* dict, String key, String val) 
         0 == strncmp(curr->key.str, key.str, smaller_str_len)
     ) {
       curr -> val = val;
-      return dict;
+      res.res = SUCCESS;
+      res.dict = dict;
+      return res;
     }
     if (
         0 < strncmp(curr->key.str, key.str, smaller_str_len) &&
@@ -39,26 +50,13 @@ Dictionary* dict_upsert(Arena* arena, Dictionary* dict, String key, String val) 
   curr -> next -> next = tmp;
   curr -> next -> key = key;
   curr -> next  -> val = val;
-
-  return dict;
+  res.res = SUCCESS;
+  res.dict = dict;
+  return res;
 }
 
 StrResult dict_get(Dictionary* dict, String key) {
   StrResult s = {0};
-  if (NULL == dict) {
-    s.status = FAIL;
-    s.err.code = ERR_INVALID_ARG;
-    s.err.msg = "Cannot GET from NULL dictionary";
-    return s;
-  }
-
-  // TODO Implement
-  s.status = FAIL;
-  return s;
-}
-
-IOResult dict_delete(Dictionary* dict, String key) {
-  IOResult s = { 0 };
   if (NULL == dict) {
     s.status = FAIL;
     s.err.code = ERR_INVALID_ARG;
@@ -85,6 +83,19 @@ IOResult dict_delete(Dictionary* dict, String key) {
     }
   }
   s.status = FAIL;
+  return s;
+}
+
+DictionaryResult dict_delete(Dictionary* dict, String key) {
+  DictionaryResult s = { 0 };
+  if (NULL == dict) {
+    s.status = FAIL;
+    s.err.code = ERR_INVALID_ARG;
+    s.err.msg = "Cannot GET from NULL dictionary";
+    return s;
+  }
+
+  // TODO implement
   return s;
 }
 

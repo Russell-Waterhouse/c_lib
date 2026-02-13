@@ -4,7 +4,6 @@
 #include "dictionary.h"
 
 
-/* TODO: implement */
 Dictionary* dict_upsert(Arena* arena, Dictionary* dict, String key, String val) {
   if (NULL == dict) {
     // TODO: Check return values;
@@ -43,9 +42,23 @@ Dictionary* dict_upsert(Arena* arena, Dictionary* dict, String key, String val) 
 
   return dict;
 }
-/* TODO: implement */
+
 StrResult dict_get(Dictionary* dict, String key) {
   StrResult s = {0};
+  if (NULL == dict) {
+    s.status = FAIL;
+    s.err.code = ERR_INVALID_ARG;
+    s.err.msg = "Cannot GET from NULL dictionary";
+    return s;
+  }
+
+  // TODO Implement
+  s.status = FAIL;
+  return s;
+}
+
+IOResult dict_delete(Dictionary* dict, String key) {
+  IOResult s = { 0 };
   if (NULL == dict) {
     s.status = FAIL;
     s.err.code = ERR_INVALID_ARG;
@@ -73,10 +86,5 @@ StrResult dict_get(Dictionary* dict, String key) {
   }
   s.status = FAIL;
   return s;
-}
-
-/* TODO: implement */
-Result dict_delete(Dictionary* dict, String key) {
-  return FAIL;
 }
 

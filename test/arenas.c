@@ -3,7 +3,7 @@
 #include "../core/pretty_print.h"
 
 
-Result test_create() {
+Status test_create() {
   ArenaResult r = arena_create(KiB(4));
   if (r.status == SUCCESS) {
     arena_free(r.arena);
@@ -11,7 +11,7 @@ Result test_create() {
   return r.status;
 }
 
-Result test_push_linked_list() {
+Status test_push_linked_list() {
   Arena* a;
   ArenaResult r1 = arena_create(10);
   if (r1.status != SUCCESS) {
@@ -31,7 +31,7 @@ Result test_push_linked_list() {
   return SUCCESS;
 }
 
-Result test_push() {
+Status test_push() {
   Arena* a;
   ArenaResult r1 = arena_create(KiB(4));
   a = r1.arena;

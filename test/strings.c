@@ -4,7 +4,7 @@
 #include "../types/strings.h"
 #include "../core/pretty_print.h"
 
-Result test_cstr_to_str() {
+Status test_cstr_to_str() {
   char s1[] = "";
   char s2[] = "This is a string";
   char s3[] = "This is another string";
@@ -35,11 +35,11 @@ Result test_cstr_to_str() {
 }
 
 /* TODO */
-Result test_equal() {
+Status test_equal() {
   return SUCCESS;
 }
 
-Result test_split() {
+Status test_split() {
   Arena* arena = arena_create(KiB(10)).arena;
   String s1 = cstr_to_str(arena, "2000-01-99", strlen("2000-01-99")).str;
   String e1 = cstr_to_str(arena, "2000", strlen("2000")).str;
@@ -66,7 +66,7 @@ Result test_split() {
   return FAIL;
 }
 
-Result test_make_kmp_fail_table() {
+Status test_make_kmp_fail_table() {
   Arena* arena = arena_create(KiB(10)).arena;
   char* cstr = "ABCDABD";
   String w = cstr_to_str(arena, cstr, strlen(cstr)).str;
@@ -137,7 +137,7 @@ Result test_make_kmp_fail_table() {
   return SUCCESS;
 }
 
-Result test_find_all() {
+Status test_find_all() {
   Arena* arena = arena_create(KiB(10)).arena;
   char* cstr_s = "";
   char* cstr_w = "";

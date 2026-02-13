@@ -6,7 +6,7 @@
 #define one_million (u64)1000000
 #define expected_memsize (u64)0b01 << 20
 
-Result test_insert_back_when_empty() {
+Status test_insert_back_when_empty() {
   GENERIC_TYPEDynArr arr = {0};
   arr = GENERIC_TYPE_insert_back_or_die(arr, 100);
   if (arr.memsize == DYNAMIC_ARRAY_START_SIZE && arr.size == 1 && arr.arr[0] == 100) {
@@ -19,7 +19,7 @@ Result test_insert_back_when_empty() {
   return FAIL;
 }
 
-Result test_resizing() {
+Status test_resizing() {
   GENERIC_TYPEDynArr a = {0};
   u64 i;
   for (i = 0; i < one_million; i++) {

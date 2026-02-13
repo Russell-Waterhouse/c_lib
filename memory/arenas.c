@@ -70,7 +70,7 @@ PointerResult arena_push(Arena* arena, size_t size) {
   return p;
 }
 
-Result arena_free(Arena* arena) {
+Status arena_free(Arena* arena) {
   Result next_free_res = SUCCESS;
   if (NULL == arena->start_position) {
     return FAIL;

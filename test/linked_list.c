@@ -4,7 +4,7 @@
 #include "../types/types.h"
 #include "../core/pretty_print.h"
 
-Result test_insert() {
+Status test_insert() {
   u64 i;
   Node* head = GENERIC_TYPE_insert_front(NULL, 0);
   for(i = 0; i < 8; i++) {
@@ -27,7 +27,8 @@ Result test_insert() {
   return SUCCESS;
 }
 
-Result test_delete() {
+// TODO
+Status test_delete() {
   return SUCCESS;
 }
 

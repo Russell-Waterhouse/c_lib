@@ -11,7 +11,6 @@ typedef struct DictNode{
 
 Dictionary* dict_upsert(Arena* arena, Dictionary* dict, String key, String val);
 StrResult dict_get(Dictionary* dict, String key);
-Result dict_delete(Dictionary* dict, String key);
-
+IOResult dict_delete(Dictionary* dict, String key);
 
 #endif

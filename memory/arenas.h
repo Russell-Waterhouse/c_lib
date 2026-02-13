@@ -24,6 +24,6 @@ typedef struct {
 
 ArenaResult arena_create(size_t size);
 PointerResult arena_push(Arena* arena, size_t size);
-Result arena_free(Arena* arena);
+Status arena_free(Arena* arena);
 
 #endif // ARENAS_H

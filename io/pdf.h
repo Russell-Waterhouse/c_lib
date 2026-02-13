@@ -59,7 +59,7 @@ typedef struct {
 } PDF;
 
 typedef struct {
-  Result status;
+  Status status;
   PDF val;
   Error err;
 } PDFResult;

@@ -384,7 +384,7 @@ StrResult u64_to_str(Arena* arena, u64 v) {
 }
 
 
-Result strip_in_place(String s) {
+Status strip_in_place(String s) {
   /* TODO: Finish the rest of this */
   if (s.str[s.size - 1] == '\n') {
     s.size--;

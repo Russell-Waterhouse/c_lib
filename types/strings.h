@@ -20,23 +20,23 @@ typedef struct {
 } DynStringArr;
 
 typedef struct {
-  Result status;
+  Status status;
   DynStringArr strs;
 } SplitResultOption;
 
 typedef struct {
-  Result status;
+  Status status;
   String slice;
 } SliceResult;
 
 typedef struct {
-  Result status;
+  Status status;
   String str;
   Error err;
 } StrResult;
 
 typedef struct {
-  Result status;
+  Status status;
   DynStringArr dyn_arr;
   Error err;
 } DynStrArrResult;
@@ -70,6 +70,6 @@ u64 replace_first(String s, String search_str, String replacement_str);
 u64 replace_all(String s, String search_str, String replacement_str);
 
 /* _in_place functions */
-Result strip_in_place(String s);
+Status strip_in_place(String s);
 
 #endif /* MY_STRINGS_H */

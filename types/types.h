@@ -18,7 +18,7 @@ typedef int64_t i64;
 typedef enum {
   FAIL = 0,
   SUCCESS = 1
-} Result;
+} Status;
 
 typedef enum {
   ERR_NONE = 0,
@@ -34,12 +34,12 @@ typedef struct {
 } Error;
 
 typedef struct {
-  Result status;
+  Status status;
   Error err;
-} IOResult; /* TODO: Not sure I'm happy with this name. */
+} Result;
 
 typedef struct {
-  Result status;
+  Status status;
   Error err;
   u64 res;
 } u64Result;
@@ -50,7 +50,7 @@ union PointerOrErrror {
 };
 
 typedef struct {
-  Result status;
+  Status status;
   union PointerOrErrror val;
 } PointerResult;
 

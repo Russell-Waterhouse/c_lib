@@ -4,7 +4,7 @@
 #include "../types/types.h"
 #include <string.h>
 
-Result test_null_file_handle_fails() {
+Status test_null_file_handle_fails() {
   PDFResult res = parsePDF(NULL);
   if (
       res.status == FAIL &&
@@ -16,7 +16,7 @@ Result test_null_file_handle_fails() {
   return FAIL;
 }
 
-Result test_cross_reference_table() {
+Status test_cross_reference_table() {
   // TODO: START HERE
   PDF pdf;
   Arena* arena = arena_create(MiB(1)).arena;
@@ -31,7 +31,7 @@ Result test_cross_reference_table() {
   return SUCCESS;
 }
 
-Result test_write_minimal_input() {
+Status test_write_minimal_input() {
   Arena* arena = arena_create(KiB(10)).arena;
   PDF pdf;
   pdf.magic_number = cstr_to_str_unsafe(arena, "1.7").str;

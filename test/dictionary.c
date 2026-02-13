@@ -3,7 +3,7 @@
 #include "../core/pretty_print.h"
 #include "../types/types.h"
 
-Result test_upsert() {
+Status test_upsert() {
   Arena* arena = arena_create(MiB(1)).arena;
   String s1 = cstr_to_str_arena_unsafe(arena, "A").str;
   String s2 = cstr_to_str_arena_unsafe(arena, "Z").str;

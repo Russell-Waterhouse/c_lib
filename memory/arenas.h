@@ -11,7 +11,7 @@ typedef struct Arena {
 } Arena;
 
 typedef struct {
-  Result status;
+  Status status;
   Error err;
   Arena* arena;
 } ArenaResult;

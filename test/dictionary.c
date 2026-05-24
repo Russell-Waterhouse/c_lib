@@ -5,10 +5,17 @@
 
 Status test_upsert() {
   Arena* arena = arena_create(MiB(1)).arena;
+  /*
+   * TODO: Some null pointer is segfaulting this test.
   String s1 = cstr_to_str_arena_unsafe(arena, "A").str;
   String s2 = cstr_to_str_arena_unsafe(arena, "Z").str;
   String s3 = cstr_to_str_arena_unsafe(arena, "A").str;
-  Dictionary* dict = dict_upsert(arena, NULL, s1, s2);
+  DictionaryResult* dict_result = dict_upsert(arena, NULL, s1, s2);
+  if (dict_result->res.status != SUCCESS) {
+    arena_free(arena);
+    return FAIL;
+  }
+  Dictionary* dict = dict_result->dict;
   StrResult res = dict_get(dict, s3);
   if (
       res.status == SUCCESS &&
@@ -17,6 +24,7 @@ Status test_upsert() {
     arena_free(arena);
     return SUCCESS;
   }
+  */
 
   arena_free(arena);
   return FAIL;

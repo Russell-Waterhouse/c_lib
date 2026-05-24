@@ -1,14 +1,16 @@
 #include "../types/types.h"
 #include "../types/strings.h"
+#include "../memory/arenas.h"
 #include <string.h>
 #include "dictionary.h"
 
 
 DictionaryResult* dict_upsert(Arena* arena, Dictionary* dict, String key, String val) {
   DictionaryResult* res = {0};
+  /*
   if (NULL == dict) {
     // TODO: this is programmingon my phone, doesn't compile.
-    allocResult = (Dictionary*)arena_push(arena, sizeof(Dictionary));
+    Dictionary* allocResult = (Dictionary*)arena_push(arena, sizeof(Dictionary));
     if (dict.status == FAIL) {
       res.status = FAIL;
       res.err = allocResult.val.err;
@@ -50,8 +52,9 @@ DictionaryResult* dict_upsert(Arena* arena, Dictionary* dict, String key, String
   curr -> next -> next = tmp;
   curr -> next -> key = key;
   curr -> next  -> val = val;
-  res.res = SUCCESS;
-  res.dict = dict;
+  */
+  res->res.status = FAIL; // TODO: change to success when this actually works.
+  // res->dict = dict;
   return res;
 }
 
@@ -89,7 +92,7 @@ StrResult dict_get(Dictionary* dict, String key) {
 DictionaryResult dict_delete(Dictionary* dict, String key) {
   DictionaryResult s = { 0 };
   if (NULL == dict) {
-    s.status = FAIL;
+    s.res.status = FAIL;
     s.err.code = ERR_INVALID_ARG;
     s.err.msg = "Cannot GET from NULL dictionary";
     return s;

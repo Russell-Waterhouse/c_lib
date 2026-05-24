@@ -71,7 +71,7 @@ PointerResult arena_push(Arena* arena, size_t size) {
 }
 
 Status arena_free(Arena* arena) {
-  Result next_free_res = SUCCESS;
+  Status next_free_res = SUCCESS;
   if (NULL == arena->start_position) {
     return FAIL;
   }

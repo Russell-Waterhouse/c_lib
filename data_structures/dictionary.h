@@ -11,7 +11,7 @@ typedef struct DictNode {
 
 typedef struct  {
    Result res;
-   Dictionary* dict:
+   Dictionary* dict;
    Error err;
 } DictionaryResult;
 

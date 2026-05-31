@@ -5,6 +5,10 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#define file_private static
+#define local_persist static
+
 typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;

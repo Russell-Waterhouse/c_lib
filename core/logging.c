@@ -21,21 +21,22 @@ void close_logfile() {
 file_private char* log_level_to_str(LogLevel l) {
   switch (l) {
     case VERBOSE:
-      return "verbose";
+      return "VERBOSE";
     case INFO:
-      return "info";
+      return "INFO";
     case WARN:
-      return "warning";
+      return "WARNING";
     case ERROR:
-      return "error";
+      return "ERROR";
     case CRITICAL:
-      return "critical";
+      return "CRITICAL";
     default:
       return "unknown";
   }
 }
 
 void log_event(LogLevel log_lvl, char* msg) {
-  fprintf(log_file, "LOG LEVEL %s: %s\n", log_level_to_str(log_lvl), msg);
+  fprintf(log_file, "%s: %s\n", log_level_to_str(log_lvl), msg);
+  fflush(log_file); // For now, just write every log
 }
 

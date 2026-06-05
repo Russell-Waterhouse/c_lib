@@ -3,7 +3,7 @@
 #include "logging.h"
 
 // file_private char log_file_path[255];
-file_private FILE* log_file;
+file_private FILE* log_file = NULL;
 
 Status set_logfile(const char* log_file_path) {
   log_file = fopen(log_file_path, "a+");
@@ -36,6 +36,11 @@ file_private char* log_level_to_str(LogLevel l) {
 }
 
 void log_event(LogLevel log_lvl, char* msg) {
+  if (!log_file) {
+    // if no log file is initialized, just print to stdout
+    printf("%s: %s\n", log_level_to_str(log_lvl), msg);
+    return;
+  }
   fprintf(log_file, "%s: %s\n", log_level_to_str(log_lvl), msg);
   fflush(log_file); // For now, just write every log
 }

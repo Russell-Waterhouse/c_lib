@@ -2,6 +2,19 @@
 #include "../types/types.h"
 #include <stdlib.h>
 
+Arena *arena_reset(Arena **arena) {
+  if (NULL != (*arena)->next) {
+    size_t next_size = (*arena)->len * 2;
+    arena_free(*arena);
+    // since the last arena wasn't big enough, multiply last size by 2 to get
+    // this one.
+    *arena = arena_create(next_size).arena; // TODO: no blind unwrap
+    (*arena)->len = next_size;
+  }
+  (*arena)->current_position = (*arena)->start_position;
+  return *arena;
+}
+
 ArenaResult arena_create(size_t len) {
   ArenaResult res;
   if (len < 1) {
@@ -10,7 +23,7 @@ ArenaResult arena_create(size_t len) {
     res.err.msg = "Cannot create an arena with a len of 0";
     return res;
   }
-  res.arena = (Arena*)malloc(sizeof(Arena));
+  res.arena = (Arena *)malloc(sizeof(Arena));
   if (NULL == res.arena) {
     res.status = FAIL;
     res.err.code = ERR_MEM_ALLOC_FAIL;
@@ -34,7 +47,7 @@ ArenaResult arena_create(size_t len) {
   return res;
 }
 
-PointerResult arena_push(Arena* arena, size_t size) {
+PointerResult arena_push(Arena *arena, size_t size) {
   PointerResult p;
   if (arena->len == 0 || arena->start_position == NULL) {
     p.status = FAIL;
@@ -47,12 +60,14 @@ PointerResult arena_push(Arena* arena, size_t size) {
     return arena_push(arena->next, size);
   }
 
-  void* aligned_current_pos = (void*)(((u64)(arena->current_position) + ((u64)(ARENA_ALIGN) - 1)) & (~((u64)(ARENA_ALIGN) - 1)));
+  void *aligned_current_pos =
+      (void *)(((u64)(arena->current_position) + ((u64)(ARENA_ALIGN)-1)) &
+               (~((u64)(ARENA_ALIGN)-1)));
 
-  void* new_pos = aligned_current_pos + size;
+  void *new_pos = aligned_current_pos + size;
 
   if (new_pos >= arena->current_position + arena->len) {
-    ArenaResult r = arena_create((2 * arena->len ) + (2 * size));
+    ArenaResult r = arena_create((2 * arena->len) + (2 * size));
     if (SUCCESS != r.status) {
       p.status = FAIL;
       p.val.err.code = r.err.code;
@@ -65,12 +80,12 @@ PointerResult arena_push(Arena* arena, size_t size) {
   arena->current_position = new_pos;
 
   p.status = SUCCESS;
-  p.val.res = (u8*)aligned_current_pos;
+  p.val.res = (u8 *)aligned_current_pos;
 
   return p;
 }
 
-Status arena_free(Arena* arena) {
+Status arena_free(Arena *arena) {
   Status next_free_res = SUCCESS;
   if (NULL == arena->start_position) {
     return FAIL;
@@ -86,4 +101,3 @@ Status arena_free(Arena* arena) {
   arena = NULL;
   return SUCCESS && next_free_res;
 }
-

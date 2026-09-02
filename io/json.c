@@ -1,4 +1,5 @@
 #include "json.h"
+#include "../core/debugging.h"
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,6 +7,30 @@
 #define STRINGIFY_INITIAL_LEN 256
 #define STACK_BUFFER_LEN 256
 #define BASE_TEN 10
+
+typedef struct {
+  char buffr[STACK_BUFFER_LEN];
+  size_t len;
+} StackBuffer;
+
+void push_stack_buffer(char c, StackBuffer *buffr) {
+  if (buffr->len + 1 > STACK_BUFFER_LEN) {
+    puts("buffer overrun");
+    exit(1);
+  }
+  buffr->buffr[buffr->len] = c;
+  buffr->len++;
+}
+
+char pop_stack_buffr(StackBuffer *buffr) {
+  if (buffr->len < 1) {
+    puts("buffer under run");
+    exit(1);
+  }
+  char c = buffr->buffr[buffr->len - 1];
+  buffr->len--;
+  return c;
+}
 
 typedef enum {
   StartState,
@@ -22,16 +47,40 @@ typedef enum {
   FinishedReadingObjectKey,
 } ParserStateMachineState;
 
+void handle_closing_brace_reading_int(ParserStateMachineState *state,
+                                      StackBuffer *scratch, Json *json) {
+  if (scratch->len + 1 >= STACK_BUFFER_LEN) {
+    puts("integer too long");
+    exit(1);
+  }
+  scratch->buffr[scratch->len] = '\0';
+  long int value = strtol(scratch->buffr, NULL, BASE_TEN);
+  // TODO: there's more to strtol for error handling
+  json->obj.value.type = JSON_value_type_Int;
+  json->obj.value.int_val = value;
+  *state = FinishedReadingObject;
+}
+
+void handle_closing_brace_reading_float(ParserStateMachineState *state,
+                                        StackBuffer *scratch, Json *json) {
+  if (scratch->len + 1 >= STACK_BUFFER_LEN) {
+    puts("key too long");
+    exit(1);
+  }
+  scratch->buffr[scratch->len] = '\0';
+  float value = strtof(scratch->buffr, NULL);
+  // TODO: there's more to strtof for error handling
+  json->obj.value.type = JSON_value_type_Float;
+  json->obj.value.float_val = value;
+  *state = FinishedReadingObject;
+}
+
 Json parse(char *json_str, size_t json_str_len) {
   Json json = {0};
   json.arena = arena_create(KiB(256)).arena;
   // todo: look up max number of characters allowed in a number in JSON
-  typedef struct {
-    char buffr[STACK_BUFFER_LEN];
-    size_t len;
-  } StackBuffer;
   StackBuffer scratch = {0};
-  // char state_stack[256];
+  StackBuffer state_stack = {0};
   ParserStateMachineState state = StartState;
   for (u32 i = 0; i < json_str_len; i++) {
     char c = json_str[i];
@@ -40,61 +89,30 @@ Json parse(char *json_str, size_t json_str_len) {
     }
     switch (c) {
     case '{':
+      push_stack_buffer(c, &state_stack);
       if (StartState == state) {
         state = ReadingObjectKey;
         continue;
       }
-      /*
-      push(state_stack, c);
-      if (state == isReadingObjectKeyString || state == isReadingValueKeyString)
-        push(buffr, c);
-
-      if (state == new || state == isReadyToReadValue) {
-        state = isReadingObjectKey;
-        continue;
-      }
-      printf("Error: unexpected character %c at index %lu", c, i);
-      exit(1);
-      */
       break;
     case '}':
+      if ('{' != pop_stack_buffr(&state_stack)) {
+        puts("unmatched curly's");
+        exit(1);
+      }
       if (ReadingObjectKey == state) {
         // this object has no key and no value
         state = FinishedReadingObject;
         continue;
       }
       if (ReadingIntegerValue == state) {
-        if (scratch.len + 1 >= STACK_BUFFER_LEN) {
-          puts("key too long");
-          continue;
-        }
-        scratch.buffr[scratch.len] = '\0';
-        long int value = strtol(scratch.buffr, NULL, BASE_TEN);
-        // TODO: there's more to strtol for error handling
-        json.obj.value.type = JSON_value_type_Int;
-        json.obj.value.int_val = value;
-        state = FinishedReadingObject;
+        handle_closing_brace_reading_int(&state, &scratch, &json);
         continue;
       }
       if (ReadingFloatingValue == state) {
-        if (scratch.len + 1 >= STACK_BUFFER_LEN) {
-          puts("key too long");
-          continue;
-        }
-        scratch.buffr[scratch.len] = '\0';
-        float value = strtof(scratch.buffr, NULL);
-        // TODO: there's more to strtof for error handling
-        json.obj.value.type = JSON_value_type_Float;
-        json.obj.value.float_val = value;
-        state = FinishedReadingObject;
+        handle_closing_brace_reading_float(&state, &scratch, &json);
         continue;
       }
-      /*
-      char popped_state = pop(stack_state) if (popped_state != '{') {
-        printf("Error: unexpected character %c at index %lu", c, i);
-        exit(1);
-      }
-      */
       break;
     case '[':
       break;

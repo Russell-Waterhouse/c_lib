@@ -45,6 +45,8 @@ typedef enum {
   ReadingValueKeyString,
   FinishedReadingObject,
   FinishedReadingObjectKey,
+  ReadingArrayElement,
+  FinishedReadingArray,
 } ParserStateMachineState;
 
 void handle_closing_brace_reading_int(ParserStateMachineState *state,
@@ -75,6 +77,18 @@ void handle_closing_brace_reading_float(ParserStateMachineState *state,
   *state = FinishedReadingObject;
 }
 
+void handle_closing_key_quote(ParserStateMachineState *state,
+                              StackBuffer *scratch, Json *json) {
+
+  char *dest = (char *)(arena_push(json->arena, scratch->len).val.res);
+  memcpy(dest, scratch->buffr, scratch->len);
+  *state = FinishedReadingObjectKey;
+  json->obj.key.str = dest;
+  json->obj.key.memsize = scratch->len;
+  json->obj.key.size = scratch->len;
+  scratch->len = 0;
+}
+
 Json parse(char *json_str, size_t json_str_len) {
   Json json = {0};
   json.arena = arena_create(KiB(256)).arena;
@@ -91,6 +105,7 @@ Json parse(char *json_str, size_t json_str_len) {
     case '{':
       push_stack_buffer(c, &state_stack);
       if (StartState == state) {
+        json.start = JsonStartObject;
         state = ReadingObjectKey;
         continue;
       }
@@ -115,18 +130,27 @@ Json parse(char *json_str, size_t json_str_len) {
       }
       break;
     case '[':
+      push_stack_buffer(c, &state_stack);
+      if (state == StartState) {
+        json.start = JsonStartArray;
+        state = ReadingArrayElement;
+        continue;
+      }
       break;
     case ']':
+      if ('[' != pop_stack_buffr(&state_stack)) {
+        puts("unmatched brackes");
+        exit(1);
+      }
+      if (ReadingArrayElement == state) {
+        // this array has no values
+        state = FinishedReadingArray;
+        continue;
+      }
       break;
     case '"':
       if (state == ReadingObjectKeyString) {
-        char *dest = (char *)(arena_push(json.arena, scratch.len).val.res);
-        memcpy(dest, scratch.buffr, scratch.len);
-        state = FinishedReadingObjectKey;
-        json.obj.key.str = dest;
-        json.obj.key.memsize = scratch.len;
-        json.obj.key.size = scratch.len;
-        scratch.len = 0;
+        handle_closing_key_quote(&state, &scratch, &json);
         continue;
       }
       if (state == ReadingObjectKey) {
@@ -244,6 +268,13 @@ String stringify(Json json) {
     break;
   };
   case JsonStartArray: {
+    s.str[s.size] = '[';
+    s.size += 1;
+    if (0 == json.arr.len) {
+      s.str[s.size] = ']';
+      s.size += 1;
+      return s;
+    }
     puts("TODO: handle case");
     break;
   }

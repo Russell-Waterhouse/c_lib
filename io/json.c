@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define JSON_ARRAY_INITIAL_LEN 256
 #define STRINGIFY_INITIAL_LEN 256
 #define STACK_BUFFER_LEN 256
 #define BASE_TEN 10
@@ -37,8 +38,8 @@ typedef enum {
   ReadingObjectKey,
   ReadingObjectKeyString,
   FinhedReadingObjectKey,
-  ReadingIntegerValue,
-  ReadingFloatingValue,
+  ReadingObjectValueInt,
+  ReadingObjectValueFloat,
   ReadyToReadValue,
   EscapedInKeyString,
   EscapedInValueString,
@@ -46,16 +47,22 @@ typedef enum {
   FinishedReadingObject,
   FinishedReadingObjectKey,
   ReadingArrayElement,
+  ReadingArrayElementInt,
   FinishedReadingArray,
 } ParserStateMachineState;
 
-void handle_closing_brace_reading_int(ParserStateMachineState *state,
-                                      StackBuffer *scratch, Json *json) {
+void add_char_to_stack_buffer(StackBuffer *scratch, char c) {
   if (scratch->len + 1 >= STACK_BUFFER_LEN) {
-    puts("integer too long");
+    puts("something too long for scratch buffer");
     exit(1);
   }
-  scratch->buffr[scratch->len] = '\0';
+  scratch->buffr[scratch->len] = c;
+  scratch->len += 1;
+}
+
+void handle_closing_brace_reading_int(ParserStateMachineState *state,
+                                      StackBuffer *scratch, Json *json) {
+  add_char_to_stack_buffer(scratch, '\0');
   long int value = strtol(scratch->buffr, NULL, BASE_TEN);
   // TODO: there's more to strtol for error handling
   json->obj.value.type = JSON_value_type_Int;
@@ -65,11 +72,7 @@ void handle_closing_brace_reading_int(ParserStateMachineState *state,
 
 void handle_closing_brace_reading_float(ParserStateMachineState *state,
                                         StackBuffer *scratch, Json *json) {
-  if (scratch->len + 1 >= STACK_BUFFER_LEN) {
-    puts("key too long");
-    exit(1);
-  }
-  scratch->buffr[scratch->len] = '\0';
+  add_char_to_stack_buffer(scratch, '\0');
   float value = strtof(scratch->buffr, NULL);
   // TODO: there's more to strtof for error handling
   json->obj.value.type = JSON_value_type_Float;
@@ -120,11 +123,11 @@ Json parse(char *json_str, size_t json_str_len) {
         state = FinishedReadingObject;
         continue;
       }
-      if (ReadingIntegerValue == state) {
+      if (ReadingObjectValueInt == state) {
         handle_closing_brace_reading_int(&state, &scratch, &json);
         continue;
       }
-      if (ReadingFloatingValue == state) {
+      if (ReadingObjectValueFloat == state) {
         handle_closing_brace_reading_float(&state, &scratch, &json);
         continue;
       }
@@ -133,6 +136,11 @@ Json parse(char *json_str, size_t json_str_len) {
       push_stack_buffer(c, &state_stack);
       if (state == StartState) {
         json.start = JsonStartArray;
+        json.arr.values =
+            arena_push(json.arena, sizeof(JsonValue) * JSON_ARRAY_INITIAL_LEN)
+                .val.res;
+        json.arr.capacity = JSON_ARRAY_INITIAL_LEN;
+        json.arr.len = 0;
         state = ReadingArrayElement;
         continue;
       }
@@ -147,7 +155,19 @@ Json parse(char *json_str, size_t json_str_len) {
         state = FinishedReadingArray;
         continue;
       }
-      break;
+      if (ReadingArrayElementInt == state) {
+        state = FinishedReadingArray;
+        if (json.arr.len + 1 >= json.arr.capacity) {
+          puts("Array too long. TODO handle");
+        }
+        json.arr.values[json.arr.len] = (JsonValue){0};
+        json.arr.values[json.arr.len].type = JSON_value_type_Int;
+        add_char_to_stack_buffer(&scratch, '\0');
+        long int value = strtol(scratch.buffr, NULL, BASE_TEN);
+        json.arr.values[json.arr.len].int_val = value;
+        json.arr.len++;
+        break;
+      }
     case '"':
       if (state == ReadingObjectKeyString) {
         handle_closing_key_quote(&state, &scratch, &json);
@@ -172,35 +192,26 @@ Json parse(char *json_str, size_t json_str_len) {
       break;
     default: {
       if (ReadyToReadValue == state && isdigit(c)) {
-        state = ReadingIntegerValue;
+        state = ReadingObjectValueInt;
       }
-      if ((ReadingIntegerValue == state || ReadingFloatingValue == state) &&
+      if (ReadingArrayElement == state && isdigit(c)) {
+        state = ReadingArrayElementInt;
+        add_char_to_stack_buffer(&scratch, c);
+        continue;
+      }
+      if ((ReadingObjectValueInt == state ||
+           ReadingObjectValueFloat == state) &&
           isdigit(c)) {
-        if (scratch.len + 1 >= STACK_BUFFER_LEN) {
-          puts("key too long");
-          continue;
-        }
-        scratch.buffr[scratch.len] = c;
-        scratch.len += 1;
+        add_char_to_stack_buffer(&scratch, c);
         continue;
       }
       if (ReadingObjectKeyString == state) {
-        if (scratch.len + 1 >= STACK_BUFFER_LEN) {
-          puts("key too long");
-          continue;
-        }
-        scratch.buffr[scratch.len] = c;
-        scratch.len += 1;
+        add_char_to_stack_buffer(&scratch, c);
         continue;
       }
-      if (ReadingIntegerValue == state && c == '.') {
-        state = ReadingFloatingValue;
-        if (scratch.len + 1 >= STACK_BUFFER_LEN) {
-          puts("key too long");
-          continue;
-        }
-        scratch.buffr[scratch.len] = c;
-        scratch.len += 1;
+      if (ReadingObjectValueInt == state && c == '.') {
+        state = ReadingObjectValueFloat;
+        add_char_to_stack_buffer(&scratch, c);
         continue;
         printf("Error: unexpected character %c at index %u", c, i);
         exit(1);
@@ -270,12 +281,25 @@ String stringify(Json json) {
   case JsonStartArray: {
     s.str[s.size] = '[';
     s.size += 1;
-    if (0 == json.arr.len) {
-      s.str[s.size] = ']';
-      s.size += 1;
-      return s;
+    for (size_t i = 0; i < json.arr.len; i++) {
+      JsonValue val = json.arr.values[i];
+      if (JSON_value_type_Int == val.type) {
+        char buffr[STACK_BUFFER_LEN] = {0};
+        snprintf(buffr, STACK_BUFFER_LEN, "%ld", val.int_val);
+        size_t str_buffr_size = strlen(buffr);
+        if (s.size + str_buffr_size > s.memsize) {
+          puts("TODO: resize here");
+        }
+        memcpy(&s.str[s.size], buffr, str_buffr_size);
+        s.size += str_buffr_size;
+      }
     }
-    puts("TODO: handle case");
+    if (s.size + 1 > s.memsize) {
+      puts("TODO: resize here");
+    }
+    s.str[s.size] = ']';
+    s.size += 1;
+    return s;
     break;
   }
   }

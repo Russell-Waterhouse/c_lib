@@ -60,6 +60,12 @@ void add_char_to_stack_buffer(StackBuffer *scratch, char c) {
   scratch->len += 1;
 }
 
+long int flush_stack_buffer_to_int(StackBuffer *scratch) {
+  add_char_to_stack_buffer(scratch, '\0');
+  scratch->len = 0;
+  return strtol(scratch->buffr, NULL, BASE_TEN);
+}
+
 void handle_closing_brace_reading_int(ParserStateMachineState *state,
                                       StackBuffer *scratch, Json *json) {
   add_char_to_stack_buffer(scratch, '\0');
@@ -162,8 +168,7 @@ Json parse(char *json_str, size_t json_str_len) {
         }
         json.arr.values[json.arr.len] = (JsonValue){0};
         json.arr.values[json.arr.len].type = JSON_value_type_Int;
-        add_char_to_stack_buffer(&scratch, '\0');
-        long int value = strtol(scratch.buffr, NULL, BASE_TEN);
+        long int value = flush_stack_buffer_to_int(&scratch);
         json.arr.values[json.arr.len].int_val = value;
         json.arr.len++;
         break;
@@ -181,6 +186,13 @@ Json parse(char *json_str, size_t json_str_len) {
       exit(1);
       break;
     case ',':
+      if (ReadingArrayElementInt == state) {
+        json.arr.values[json.arr.len] = (JsonValue){0};
+        json.arr.values[json.arr.len].type = JSON_value_type_Int;
+        long int value = flush_stack_buffer_to_int(&scratch);
+        json.arr.values[json.arr.len].int_val = value;
+        json.arr.len++;
+      }
       break;
     case ':':
       if (FinishedReadingObjectKey == state) {
@@ -193,6 +205,10 @@ Json parse(char *json_str, size_t json_str_len) {
     default: {
       if (ReadyToReadValue == state && isdigit(c)) {
         state = ReadingObjectValueInt;
+      }
+      if (ReadingArrayElementInt == state && isdigit(c)) {
+        add_char_to_stack_buffer(&scratch, c);
+        continue;
       }
       if (ReadingArrayElement == state && isdigit(c)) {
         state = ReadingArrayElementInt;
@@ -292,6 +308,13 @@ String stringify(Json json) {
         }
         memcpy(&s.str[s.size], buffr, str_buffr_size);
         s.size += str_buffr_size;
+        if (json.arr.len > i + 1) {
+          if (s.size + 1 > s.memsize) {
+            puts("TODO: resize here");
+          }
+          s.str[s.size] = ',';
+          s.size += 1;
+        }
       }
     }
     if (s.size + 1 > s.memsize) {
@@ -306,3 +329,4 @@ String stringify(Json json) {
 
   return s;
 }
+

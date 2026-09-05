@@ -38,8 +38,6 @@ Status test_write_minimal_input() {
   StrResult res = writePDF(arena, pdf);
   String actual = res.str;
   String expected = cstr_to_str_unsafe(arena, "\%PDF-1.7\n%%EOF").str;
-  pretty_print_string(expected);
-  pretty_print_string(actual);
   if (str_equal(expected, actual)) {
     arena_free(arena);
     return SUCCESS;

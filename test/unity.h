@@ -12,5 +12,7 @@
 #include "../data_structures/string_list.c"
 #include "../types/strings.c"
 #include "../memory/arenas.c"
+#include "../io/json.c"
+#include "../platform/linux/perf.c"
 
 #endif // !UNITY_H

@@ -4,6 +4,8 @@
 #include "arenas.c"
 #include "pdf.c"
 #include "dictionary.c"
+#include "json.c"
+#include "perf.c"
 #include "unity.h"
 
 
@@ -14,6 +16,8 @@ int main(void) {
   test_arenas();
   test_pdf();
   test_dictionary();
+  test_json();
+  test_perf();
   return 0;
 }
 

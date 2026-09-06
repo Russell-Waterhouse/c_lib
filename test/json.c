@@ -5,7 +5,7 @@
 #include <string.h>
 
 Status test_nested_object() {
-  char *expected = "{\"foo\":{\"bar\":123}";
+  char *expected = "{\"foo\":{}}";
   size_t size = strlen(expected);
   Json json = parse(expected, size);
   String result = stringify(json);

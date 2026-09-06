@@ -222,10 +222,10 @@ Json parse(char *json_str, size_t json_str_len) {
         state = ReadingObjectValueFloat;
         add_char_to_stack_buffer(&scratch, c);
         continue;
-        printf("Error: unexpected character %c at index %u", c, i);
-        exit(1);
-        break;
       }
+      printf("Error: unexpected character %c at index %u", c, i);
+      exit(1);
+      break;
     }
     }
   }

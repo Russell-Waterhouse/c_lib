@@ -33,6 +33,36 @@ char pop_stack_buffr(StackBuffer *buffr) {
   return c;
 }
 
+void add_char_to_stack_buffer(StackBuffer *scratch, char c) {
+  if (scratch->len + 1 >= STACK_BUFFER_LEN) {
+    puts("something too long for scratch buffer");
+    exit(1);
+  }
+  scratch->buffr[scratch->len] = c;
+  scratch->len += 1;
+}
+
+long int flush_stack_buffer_to_int(StackBuffer *scratch) {
+  add_char_to_stack_buffer(scratch, '\0');
+  scratch->len = 0;
+  return strtol(scratch->buffr, NULL, BASE_TEN);
+  // TODO: there's more to strtol for error handling
+}
+
+float flush_stack_buffer_to_float(StackBuffer *scratch) {
+  add_char_to_stack_buffer(scratch, '\0');
+  scratch->len = 0;
+  return strtof(scratch->buffr, NULL);
+  // TODO: there's more to strtof for error handling
+}
+
+char *flush_scratch_buffer_string_to_arena(StackBuffer *scratch, Arena *arena) {
+  char *dest = (char *)(arena_push(arena, scratch->len).val.res);
+  memcpy(dest, scratch->buffr, scratch->len);
+  scratch->len = 0;
+  return dest;
+}
+
 typedef enum {
   StartState,
   ReadingObjectKey,
@@ -50,53 +80,6 @@ typedef enum {
   ReadingArrayElementInt,
   FinishedReadingArray,
 } ParserStateMachineState;
-
-void add_char_to_stack_buffer(StackBuffer *scratch, char c) {
-  if (scratch->len + 1 >= STACK_BUFFER_LEN) {
-    puts("something too long for scratch buffer");
-    exit(1);
-  }
-  scratch->buffr[scratch->len] = c;
-  scratch->len += 1;
-}
-
-long int flush_stack_buffer_to_int(StackBuffer *scratch) {
-  add_char_to_stack_buffer(scratch, '\0');
-  scratch->len = 0;
-  return strtol(scratch->buffr, NULL, BASE_TEN);
-}
-
-void handle_closing_brace_reading_int(ParserStateMachineState *state,
-                                      StackBuffer *scratch, Json *json) {
-  add_char_to_stack_buffer(scratch, '\0');
-  long int value = strtol(scratch->buffr, NULL, BASE_TEN);
-  // TODO: there's more to strtol for error handling
-  json->obj.value.type = JSON_value_type_Int;
-  json->obj.value.int_val = value;
-  *state = FinishedReadingObject;
-}
-
-void handle_closing_brace_reading_float(ParserStateMachineState *state,
-                                        StackBuffer *scratch, Json *json) {
-  add_char_to_stack_buffer(scratch, '\0');
-  float value = strtof(scratch->buffr, NULL);
-  // TODO: there's more to strtof for error handling
-  json->obj.value.type = JSON_value_type_Float;
-  json->obj.value.float_val = value;
-  *state = FinishedReadingObject;
-}
-
-void handle_closing_key_quote(ParserStateMachineState *state,
-                              StackBuffer *scratch, Json *json) {
-
-  char *dest = (char *)(arena_push(json->arena, scratch->len).val.res);
-  memcpy(dest, scratch->buffr, scratch->len);
-  *state = FinishedReadingObjectKey;
-  json->obj.key.str = dest;
-  json->obj.key.memsize = scratch->len;
-  json->obj.key.size = scratch->len;
-  scratch->len = 0;
-}
 
 Json parse(char *json_str, size_t json_str_len) {
   Json json = {0};
@@ -130,11 +113,17 @@ Json parse(char *json_str, size_t json_str_len) {
         continue;
       }
       if (ReadingObjectValueInt == state) {
-        handle_closing_brace_reading_int(&state, &scratch, &json);
+        long int value = flush_stack_buffer_to_int(&scratch);
+        json.obj.value.type = JSON_value_type_Int;
+        json.obj.value.int_val = value;
+        state = FinishedReadingObject;
         continue;
       }
       if (ReadingObjectValueFloat == state) {
-        handle_closing_brace_reading_float(&state, &scratch, &json);
+        float value = flush_stack_buffer_to_float(&scratch);
+        json.obj.value.type = JSON_value_type_Float;
+        json.obj.value.float_val = value;
+        state = FinishedReadingObject;
         continue;
       }
       break;
@@ -175,7 +164,11 @@ Json parse(char *json_str, size_t json_str_len) {
       }
     case '"':
       if (state == ReadingObjectKeyString) {
-        handle_closing_key_quote(&state, &scratch, &json);
+        json.obj.key.memsize = scratch.len;
+        json.obj.key.size = scratch.len;
+        char *dest = flush_scratch_buffer_string_to_arena(&scratch, json.arena);
+        json.obj.key.str = dest;
+        state = FinishedReadingObjectKey;
         continue;
       }
       if (state == ReadingObjectKey) {
@@ -235,6 +228,11 @@ Json parse(char *json_str, size_t json_str_len) {
       }
     }
     }
+  }
+
+  if (state_stack.len > 0) {
+    puts("Unclosed characters in JSON");
+    exit(1);
   }
 
   return json;
@@ -329,4 +327,3 @@ String stringify(Json json) {
 
   return s;
 }
-

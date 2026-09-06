@@ -4,6 +4,22 @@
 #include "../types/types.h"
 #include <string.h>
 
+Status test_nested_object() {
+  char *expected = "{\"foo\":{\"bar\":123}";
+  size_t size = strlen(expected);
+  Json json = parse(expected, size);
+  String result = stringify(json);
+  if (size == result.size && !memcmp(expected, result.str, result.size)) {
+    arena_free(json.arena);
+    free(result.str);
+    return SUCCESS;
+  }
+  debugger();
+  arena_free(json.arena);
+  free(result.str);
+  return FAIL;
+}
+
 Status test_basic_array() {
   char *expected = "[1,2,3]";
   size_t size = strlen(expected);
@@ -99,7 +115,8 @@ void test_json() {
   puts("Starting json tests.");
   if (SUCCESS == test_empty_json() && SUCCESS == test_single_object_int() &&
       SUCCESS == test_single_object_float() && SUCCESS == test_empty_array() &&
-      SUCCESS == test_single_element_array() && SUCCESS == test_basic_array()) {
+      SUCCESS == test_single_element_array() && SUCCESS == test_basic_array()
+      && SUCCESS == test_nested_object()) {
     print_green("Tests completed successfully!");
     return;
   }

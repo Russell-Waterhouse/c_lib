@@ -20,7 +20,7 @@ PDFResult parsePDF(FILE* file) {
 
 StrResult writePDF(Arena* return_arena, PDF pdf) {
   StrResult s = {0};
-  if (pdf.magic_number.size == 0 || NULL == pdf.magic_number.str) {
+  if (pdf.magic_number.size == 0 || NULL == pdf.magic_number.arr) {
     s.status = FAIL;
     s.err.code = ERR_INVALID_ARG;
     s.err.msg = "Cannot write PDF with null magic number";

@@ -5,19 +5,11 @@
 #include "./types.h"
 #include "../data_structures/size_t_dynamic_array.h"
 #include "../data_structures/i64_dynamic_array.h"
+#include "../data_structures/dynamic_array.h"
 #include "../memory/arenas.h"
 
-typedef struct {
-  size_t size;
-  size_t memsize;
-  char* str;
-} String;
-
-typedef struct {
-  size_t memsize;
-  size_t size;
-  String* arr;
-} DynStringArr;
+DEFINE_DYNAMIC_ARRAY(char, String)
+DEFINE_DYNAMIC_ARRAY(String, DynStringArr)
 
 typedef struct {
   Status status;

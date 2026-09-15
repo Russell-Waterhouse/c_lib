@@ -198,13 +198,13 @@ Json parse(char *json_str, size_t json_str_len) {
       }
     case '"':
       if (state == ReadingObjectKeyString) {
-        current_value->obj_pairs[current_value->len].key.memsize = scratch.len;
+        current_value->obj_pairs[current_value->len].key.capacity = scratch.len;
         current_value->obj_pairs[current_value->len].key.size = scratch.len;
         // const char* expected = "{\"key\":12345}";
         // if (!memcmp(expected, json_str, strlen(expected))) {
         // }
         char *dest = flush_scratch_buffer_string_to_arena(&scratch, json.arena);
-        current_value->obj_pairs[current_value->len].key.str = dest;
+        current_value->obj_pairs[current_value->len].key.arr = dest;
         state = FinishedReadingObjectKey;
         continue;
       }
@@ -288,23 +288,14 @@ Json parse(char *json_str, size_t json_str_len) {
   return json;
 }
 
-void str_push(String *s, char c) {
-  if (s->size + 1 >= s->memsize) {
-    puts("TODO: resize here str_push");
-  }
-
-  s->str[s->size] = c;
-  s->size += 1;
-}
-
 void copy_int_to_string(String *s, long int v) {
   char buffr[STACK_BUFFER_LEN] = {0};
   snprintf(buffr, STACK_BUFFER_LEN, "%ld", v);
   size_t str_buffr_size = strlen(buffr);
-  if (s->size + str_buffr_size > s->memsize) {
-    puts("TODO: resize here int to string");
+  if (s->size + str_buffr_size > s->capacity) {
+    String_resize(s, (s->capacity * 2) + str_buffr_size);
   }
-  memcpy(&s->str[s->size], buffr, str_buffr_size);
+  memcpy(&s->arr[s->size], buffr, str_buffr_size);
   s->size += str_buffr_size;
 }
 
@@ -312,43 +303,43 @@ void copy_float_to_string(String *s, float f) {
   char buffr[STACK_BUFFER_LEN] = {0};
   snprintf(buffr, STACK_BUFFER_LEN, "%f", f);
   size_t str_buffr_size = strlen(buffr);
-  if (s->size + str_buffr_size > s->memsize) {
+  if (s->size + str_buffr_size > s->capacity) {
     puts("TODO: resize here float to string");
   }
-  memcpy(&s->str[s->size], buffr, str_buffr_size);
+  memcpy(&s->arr[s->size], buffr, str_buffr_size);
   s->size += str_buffr_size;
 }
 
 void copy_key_to_string(String *s, String *key) {
   // + 2 for the characters `"":`
-  if (s->size + key->size + 2 >= s->memsize) {
+  if (s->size + key->size + 2 >= s->capacity) {
     puts("TODO: resize here key to string");
   }
-  str_push(s, '"');
-  memcpy(&s->str[s->size], key->str, key->size);
+  String_insert_back_or_die(s, '"');
+  memcpy(&s->arr[s->size], key->arr, key->size);
   s->size += key->size;
-  str_push(s, '"');
+  String_insert_back_or_die(s, '"');
 }
 
 void stringify_json_value(String *s, JsonValue *current_value) {
   StackBuffer state_stack = {0};
   switch (current_value->type) {
   case JSON_value_type_Object: {
-    str_push(s, '{');
+    String_insert_back_or_die(s, '{');
     push_stack_buffer('}', &state_stack);
 
     for (u32 i = 0; i < current_value->len; i++) {
       if (i > 0) {
-        str_push(s, ',');
+        String_insert_back_or_die(s, ',');
       }
 
       if (current_value->obj_pairs[0].key.size == 0) {
-        str_push(s, pop_stack_buffr(&state_stack));
+        String_insert_back_or_die(s, pop_stack_buffr(&state_stack));
         continue;
       }
 
       copy_key_to_string(s, &(current_value->obj_pairs[i].key));
-      str_push(s, ':');
+      String_insert_back_or_die(s, ':');
       if (JSON_value_type_Int == current_value->obj_pairs[i].value.type) {
         copy_int_to_string(s, current_value->obj_pairs[i].value.int_val);
       }
@@ -362,17 +353,17 @@ void stringify_json_value(String *s, JsonValue *current_value) {
     break;
   };
   case JSON_value_type_Array: {
-    str_push(s, '[');
+    String_insert_back_or_die(s, '[');
     push_stack_buffer(']', &state_stack);
     for (size_t i = 0; i < current_value->len; i++) {
       JsonValue val = current_value->arr_values[i];
       if (JSON_value_type_Int == val.type) {
         copy_int_to_string(s, val.int_val);
         if (current_value->len > i + 1) {
-          if (s->size + 1 > s->memsize) {
+          if (s->size + 1 > s->capacity) {
             puts("TODO: resize here array");
           }
-          str_push(s, ',');
+          String_insert_back_or_die(s, ',');
         }
       }
     }
@@ -387,16 +378,15 @@ void stringify_json_value(String *s, JsonValue *current_value) {
   }
 
   while (state_stack.len > 0) {
-    str_push(s, pop_stack_buffr(&state_stack));
+    String_insert_back_or_die(s, pop_stack_buffr(&state_stack));
   }
-
 }
 
 String stringify(Json json) {
   String s = {
       .size = 0,
-      .memsize = STRINGIFY_INITIAL_LEN,
-      .str = calloc(STRINGIFY_INITIAL_LEN, sizeof(char)),
+      .capacity = STRINGIFY_INITIAL_LEN,
+      .arr = calloc(STRINGIFY_INITIAL_LEN, sizeof(char)),
   };
   stringify_json_value(&s, &json.value);
   return s;

@@ -14,14 +14,14 @@ Status test_nested_resize_array() {
   size_t size = strlen(expected);
   Json json = parse(expected, size);
   String result = stringify(json);
-  if (size == result.size && !memcmp(expected, result.str, result.size)) {
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
     arena_free(json.arena);
-    free(result.str);
+    free(result.arr);
     return SUCCESS;
   }
   debugger();
   arena_free(json.arena);
-  free(result.str);
+  free(result.arr);
   return FAIL;
 }
 
@@ -30,14 +30,14 @@ Status test_nested_non_emtpy_object_float() {
   size_t size = strlen(expected);
   Json json = parse(expected, size);
   String result = stringify(json);
-  if (size == result.size && !memcmp(expected, result.str, result.size)) {
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
     arena_free(json.arena);
-    free(result.str);
+    free(result.arr);
     return SUCCESS;
   }
   debugger();
   arena_free(json.arena);
-  free(result.str);
+  free(result.arr);
   return FAIL;
 }
 
@@ -46,14 +46,14 @@ Status test_nested_non_emtpy_object_int() {
   size_t size = strlen(expected);
   Json json = parse(expected, size);
   String result = stringify(json);
-  if (size == result.size && !memcmp(expected, result.str, result.size)) {
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
     arena_free(json.arena);
-    free(result.str);
+    free(result.arr);
     return SUCCESS;
   }
   debugger();
   arena_free(json.arena);
-  free(result.str);
+  free(result.arr);
   return FAIL;
 }
 
@@ -62,14 +62,14 @@ Status test_two_keys_object() {
   size_t size = strlen(expected);
   Json json = parse(expected, size);
   String result = stringify(json);
-  if (size == result.size && !memcmp(expected, result.str, result.size)) {
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
     arena_free(json.arena);
-    free(result.str);
+    free(result.arr);
     return SUCCESS;
   }
   debugger();
   arena_free(json.arena);
-  free(result.str);
+  free(result.arr);
   return FAIL;
 }
 
@@ -78,14 +78,14 @@ Status test_nested_empty_object() {
   size_t size = strlen(expected);
   Json json = parse(expected, size);
   String result = stringify(json);
-  if (size == result.size && !memcmp(expected, result.str, result.size)) {
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
     arena_free(json.arena);
-    free(result.str);
+    free(result.arr);
     return SUCCESS;
   }
   debugger();
   arena_free(json.arena);
-  free(result.str);
+  free(result.arr);
   return FAIL;
 }
 
@@ -94,14 +94,14 @@ Status test_basic_array() {
   size_t size = strlen(expected);
   Json json = parse(expected, size);
   String result = stringify(json);
-  if (size == result.size && !memcmp(expected, result.str, result.size)) {
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
     arena_free(json.arena);
-    free(result.str);
+    free(result.arr);
     return SUCCESS;
   }
   debugger();
   arena_free(json.arena);
-  free(result.str);
+  free(result.arr);
   return FAIL;
 }
 
@@ -110,13 +110,13 @@ Status test_single_element_array() {
   size_t size = strlen(expected);
   Json json = parse(expected, size);
   String result = stringify(json);
-  if (size == result.size && !memcmp(expected, result.str, result.size)) {
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
     arena_free(json.arena);
-    free(result.str);
+    free(result.arr);
     return SUCCESS;
   }
   arena_free(json.arena);
-  free(result.str);
+  free(result.arr);
   return FAIL;
 }
 
@@ -125,14 +125,14 @@ Status test_empty_array() {
   size_t size = strlen(expected);
   Json json = parse(expected, size);
   String result = stringify(json);
-  if (size == result.size && !memcmp(expected, result.str, result.size)) {
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
     arena_free(json.arena);
-    free(result.str);
+    free(result.arr);
     return SUCCESS;
   }
   debugger();
   arena_free(json.arena);
-  free(result.str);
+  free(result.arr);
   return FAIL;
 }
 
@@ -141,13 +141,13 @@ Status test_single_object_float() {
   size_t size = strlen(expected);
   Json json = parse(expected, size);
   String result = stringify(json);
-  if (size == result.size && !memcmp(expected, result.str, result.size)) {
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
     arena_free(json.arena);
-    free(result.str);
+    free(result.arr);
     return SUCCESS;
   }
   arena_free(json.arena);
-  free(result.str);
+  free(result.arr);
   return FAIL;
 }
 
@@ -156,14 +156,14 @@ Status test_single_object_int() {
   size_t size = strlen(expected);
   Json json = parse(expected, size);
   String result = stringify(json);
-  if (size == result.size && !memcmp(expected, result.str, result.size)) {
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
     arena_free(json.arena);
-    free(result.str);
+    free(result.arr);
     return SUCCESS;
   }
   debugger();
   arena_free(json.arena);
-  free(result.str);
+  free(result.arr);
   return FAIL;
 }
 
@@ -172,14 +172,14 @@ Status test_empty_json() {
   size_t size = strlen(empty);
   Json json = parse(empty, size);
   String result = stringify(json);
-  if (size == result.size && !memcmp(empty, result.str, result.size)) {
+  if (size == result.size && !memcmp(empty, result.arr, result.size)) {
     arena_free(json.arena);
-    free(result.str);
+    free(result.arr);
     return SUCCESS;
   }
   debugger();
   arena_free(json.arena);
-  free(result.str);
+  free(result.arr);
   return FAIL;
 }
 
@@ -195,6 +195,7 @@ void test_json() {
       test_nested_empty_object,
       test_nested_non_emtpy_object_int,
       test_nested_non_emtpy_object_float,
+      test_nested_resize_array,
   };
 
   size_t len = sizeof(tests_arr) / sizeof(tests_arr[0]);

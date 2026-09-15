@@ -1,30 +1,34 @@
-#include <stdio.h>
-#include <string.h>
-#include "../types/types.h"
 #include "../types/strings.h"
 #include "../core/pretty_print.h"
+#include "../types/types.h"
+#include <stdio.h>
+#include <string.h>
 
 Status test_cstr_to_str() {
   char s1[] = "";
   char s2[] = "This is a string";
   char s3[] = "This is another string";
-  Arena* arena = arena_create(MiB(1)).arena;
+  Arena *arena = arena_create(MiB(1)).arena;
   StrResult s = cstr_to_str(arena, s1, strlen(s1));
-  if (s.status != SUCCESS || s.str.size != 0 || s.str.memsize != 0) {
-    printf("case 1 failed; size: %ld; memsize: %ld;\n", s.str.size, s.str.memsize);
+  if (s.status != SUCCESS || s.str.size != 0 || s.str.capacity != 0) {
+    printf("case 1 failed; size: %ld; capacity: %ld;\n", s.str.size,
+           s.str.capacity);
     arena_free(arena);
     return FAIL;
   }
 
   s = cstr_to_str(arena, s2, strlen(s2));
-  if (s.status != SUCCESS || s.str.size != 16 || s.str.memsize != 16 || !strcmp(s1, s.str.str)) {
-    printf("case 2 failed; size: %ld, memsize: %ld, string: %s\n",s.str.size, s.str.memsize, s.str.str);
+  if (s.status != SUCCESS || s.str.size != 16 || s.str.capacity != 16 ||
+      !strcmp(s1, s.str.arr)) {
+    printf("case 2 failed; size: %ld, capacity: %ld, string: %s\n", s.str.size,
+           s.str.capacity, s.str.arr);
     arena_free(arena);
     return FAIL;
   }
 
   s = cstr_to_str(arena, s3, strlen(s3));
-  if (s.status != SUCCESS || s.str.size != 22 || s.str.memsize != 22 || !strcmp(s2, s.str.str)) {
+  if (s.status != SUCCESS || s.str.size != 22 || s.str.capacity != 22 ||
+      !strcmp(s2, s.str.arr)) {
     printf("case 3 failed\n");
     arena_free(arena);
     return FAIL;
@@ -35,28 +39,21 @@ Status test_cstr_to_str() {
 }
 
 /* TODO */
-Status test_equal() {
-  return SUCCESS;
-}
+Status test_equal() { return SUCCESS; }
 
 Status test_split() {
-  Arena* arena = arena_create(KiB(10)).arena;
+  Arena *arena = arena_create(KiB(10)).arena;
   String s1 = cstr_to_str(arena, "2000-01-99", strlen("2000-01-99")).str;
   String e1 = cstr_to_str(arena, "2000", strlen("2000")).str;
-  String e2 = cstr_to_str(arena,"01", strlen("01")).str;
+  String e2 = cstr_to_str(arena, "01", strlen("01")).str;
   String e3 = cstr_to_str(arena, "99", strlen("99")).str;
   SplitResultOption split_strings = split_str(arena, s1, '-');
   String r1 = split_strings.strs.arr[0];
   String r2 = split_strings.strs.arr[1];
   String r3 = split_strings.strs.arr[2];
 
-  if (
-    split_strings.status == SUCCESS &&
-    split_strings.strs.size == 3 &&
-    str_equal(e1, r1) &&
-    str_equal(e2, r2) &&
-    str_equal(e3, r3)
-  ) {
+  if (split_strings.status == SUCCESS && split_strings.strs.size == 3 &&
+      str_equal(e1, r1) && str_equal(e2, r2) && str_equal(e3, r3)) {
     arena_free(arena);
     free_dyn_str_arr(split_strings.strs);
     return SUCCESS;
@@ -67,8 +64,8 @@ Status test_split() {
 }
 
 Status test_make_kmp_fail_table() {
-  Arena* arena = arena_create(KiB(10)).arena;
-  char* cstr = "ABCDABD";
+  Arena *arena = arena_create(KiB(10)).arena;
+  char *cstr = "ABCDABD";
   String w = cstr_to_str(arena, cstr, strlen(cstr)).str;
   i64DynArr expected;
   i64DynArr actual;
@@ -116,7 +113,6 @@ Status test_make_kmp_fail_table() {
   i64_free(expected);
   i64_free(actual);
 
-
   cstr = "AB";
   w = cstr_to_str(arena, cstr, strlen(cstr)).str;
   expected = i64_insert_back_or_die(expected, -1);
@@ -138,9 +134,9 @@ Status test_make_kmp_fail_table() {
 }
 
 Status test_find_all() {
-  Arena* arena = arena_create(KiB(10)).arena;
-  char* cstr_s = "";
-  char* cstr_w = "";
+  Arena *arena = arena_create(KiB(10)).arena;
+  char *cstr_s = "";
+  char *cstr_w = "";
   String s = cstr_to_str(arena, "", 0).str;
   String w = cstr_to_str(arena, "", 0).str;
   SizeTDynArr res = find_all(s, w);
@@ -181,14 +177,8 @@ Status test_find_all() {
   s = cstr_to_str(arena, cstr_s, strlen(cstr_s)).str;
   w = cstr_to_str(arena, cstr_w, strlen(cstr_w)).str;
   res = find_all(s, w);
-  if (
-      5 != res.size ||
-      0 != res.arr[0] ||
-      2 != res.arr[1] ||
-      4 != res.arr[2] ||
-      6 != res.arr[3] ||
-      8 != res.arr[4]
-  ) {
+  if (5 != res.size || 0 != res.arr[0] || 2 != res.arr[1] || 4 != res.arr[2] ||
+      6 != res.arr[3] || 8 != res.arr[4]) {
     size_t_free(res);
     arena_free(arena);
     puts("Failed to find multiple match when strings are equal");
@@ -201,16 +191,11 @@ Status test_find_all() {
 
 void test_strings() {
   puts("Starting string tests.");
-  if (
-      test_cstr_to_str() == SUCCESS &&
-      test_equal() == SUCCESS &&
-      test_split() == SUCCESS &&
-      test_find_all() == SUCCESS
-  ) {
+  if (test_cstr_to_str() == SUCCESS && test_equal() == SUCCESS &&
+      test_split() == SUCCESS && test_find_all() == SUCCESS) {
     print_green("Tests completed successfully!");
     return;
   }
-
 
   print_red("There were test failures.");
   return;

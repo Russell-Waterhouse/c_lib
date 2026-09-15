@@ -4,7 +4,23 @@
 #include "../types/types.h"
 #include <string.h>
 
-Status test_nested_non_emtpy_object() {
+Status test_nested_non_emtpy_object_float() {
+  char *expected = "{\"foo\":{\"bar\":1.125000}}";
+  size_t size = strlen(expected);
+  Json json = parse(expected, size);
+  String result = stringify(json);
+  if (size == result.size && !memcmp(expected, result.str, result.size)) {
+    arena_free(json.arena);
+    free(result.str);
+    return SUCCESS;
+  }
+  debugger();
+  arena_free(json.arena);
+  free(result.str);
+  return FAIL;
+}
+
+Status test_nested_non_emtpy_object_int() {
   char *expected = "{\"foo\":{\"bar\":123}}";
   size_t size = strlen(expected);
   Json json = parse(expected, size);
@@ -148,15 +164,28 @@ Status test_empty_json() {
 
 void test_json() {
   puts("Starting json tests.");
-  if (SUCCESS == test_empty_json() && SUCCESS == test_single_object_int() &&
-      SUCCESS == test_single_object_float() && SUCCESS == test_empty_array() &&
-      SUCCESS == test_single_element_array() && SUCCESS == test_basic_array() &&
-      SUCCESS == test_nested_empty_object() &&
-      SUCCESS == test_two_keys_object()) {
-    print_green("Tests completed successfully!");
-    return;
-  }
+  Status (*tests_arr[])(void) = {
+      test_empty_json,
+      test_single_object_int,
+      test_single_object_float,
+      test_empty_array,
+      test_single_element_array,
+      test_basic_array,
+      test_nested_empty_object,
+      test_nested_non_emtpy_object_int,
+      test_nested_non_emtpy_object_float,
+  };
 
-  print_red("There were JSON test failures.");
+  size_t len = sizeof(tests_arr) / sizeof(tests_arr[0]);
+
+  for (size_t i = 0; i < len; i++) {
+    Status res = tests_arr[i]();
+    printf("Test number %zu was %d\n", i, res);
+    if (SUCCESS != tests_arr[i]()) {
+      print_red("There were JSON test failures.");
+      return;
+    }
+  }
+  print_green("Tests completed successfully!");
   return;
 }

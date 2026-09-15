@@ -330,57 +330,49 @@ void copy_key_to_string(String *s, String *key) {
   str_push(s, '"');
 }
 
-String stringify(Json json) {
-  String s = {
-      .size = 0,
-      .memsize = STRINGIFY_INITIAL_LEN,
-      .str = calloc(STRINGIFY_INITIAL_LEN, sizeof(char)),
-  };
+void stringify_json_value(String *s, JsonValue *current_value) {
   StackBuffer state_stack = {0};
-  JsonValue *current_value = NULL;
-  switch (json.value.type) {
+  switch (current_value->type) {
   case JSON_value_type_Object: {
-    current_value = &json.value;
-    str_push(&s, '{');
+    str_push(s, '{');
     push_stack_buffer('}', &state_stack);
 
     for (u32 i = 0; i < current_value->len; i++) {
       if (i > 0) {
-        str_push(&s, ',');
+        str_push(s, ',');
       }
 
       if (current_value->obj_pairs[0].key.size == 0) {
-        str_push(&s, pop_stack_buffr(&state_stack));
+        str_push(s, pop_stack_buffr(&state_stack));
         continue;
       }
 
-      copy_key_to_string(&s, &(current_value->obj_pairs[i].key));
-      str_push(&s, ':');
+      copy_key_to_string(s, &(current_value->obj_pairs[i].key));
+      str_push(s, ':');
       if (JSON_value_type_Int == current_value->obj_pairs[i].value.type) {
-        copy_int_to_string(&s, current_value->obj_pairs[i].value.int_val);
+        copy_int_to_string(s, current_value->obj_pairs[i].value.int_val);
       }
       if (JSON_value_type_Float == current_value->obj_pairs[i].value.type) {
-        copy_float_to_string(&s, current_value->obj_pairs[i].value.float_val);
+        copy_float_to_string(s, current_value->obj_pairs[i].value.float_val);
       }
       if (JSON_value_type_Object == current_value->obj_pairs[i].value.type) {
-        str_push(&s, '{');
-        push_stack_buffer('}', &state_stack);
+        stringify_json_value(s, &current_value->obj_pairs[i].value);
       }
     }
     break;
   };
   case JSON_value_type_Array: {
-    str_push(&s, '[');
+    str_push(s, '[');
     push_stack_buffer(']', &state_stack);
-    for (size_t i = 0; i < json.value.len; i++) {
-      JsonValue val = json.value.arr_values[i];
+    for (size_t i = 0; i < current_value->len; i++) {
+      JsonValue val = current_value->arr_values[i];
       if (JSON_value_type_Int == val.type) {
-        copy_int_to_string(&s, val.int_val);
-        if (json.value.len > i + 1) {
-          if (s.size + 1 > s.memsize) {
+        copy_int_to_string(s, val.int_val);
+        if (current_value->len > i + 1) {
+          if (s->size + 1 > s->memsize) {
             puts("TODO: resize here array");
           }
-          str_push(&s, ',');
+          str_push(s, ',');
         }
       }
     }
@@ -395,8 +387,17 @@ String stringify(Json json) {
   }
 
   while (state_stack.len > 0) {
-    str_push(&s, pop_stack_buffr(&state_stack));
+    str_push(s, pop_stack_buffr(&state_stack));
   }
 
+}
+
+String stringify(Json json) {
+  String s = {
+      .size = 0,
+      .memsize = STRINGIFY_INITIAL_LEN,
+      .str = calloc(STRINGIFY_INITIAL_LEN, sizeof(char)),
+  };
+  stringify_json_value(&s, &json.value);
   return s;
 }

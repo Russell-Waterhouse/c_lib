@@ -5,7 +5,6 @@
 #include "../core/casts.c"
 #include "../core/pretty_print.c"
 #include "../data_structures/dictionary.c"
-#include "../data_structures/dynamic_array.c"
 #include "../data_structures/size_t_dynamic_array.c"
 #include "../data_structures/linked_list.c"
 #include "../data_structures/i64_dynamic_array.c"

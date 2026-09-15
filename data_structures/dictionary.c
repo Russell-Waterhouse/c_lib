@@ -71,14 +71,14 @@ StrResult dict_get(Dictionary* dict, String key) {
   while (curr != NULL) {
     size_t smaller_str_len = curr->key.size < key.size ? curr->key.size : key.size;
     if (
-      0 == strncmp(curr->key.str, key.str, smaller_str_len)
+      0 == strncmp(curr->key.arr, key.arr, smaller_str_len)
     ) {
       s.str = curr -> val;
       s.status = SUCCESS;
       return s;
     }
     if (
-      0 > strncmp(curr->key.str, key.str, smaller_str_len)
+      0 > strncmp(curr->key.arr, key.arr, smaller_str_len)
     ) {
       // We've passed where it would be, return fail.
       s.status = FAIL;

@@ -6,13 +6,14 @@ mkdir -p ./build
 ${fileDirname}
 
 gcc \
-  --std=c99 \
+  --std=gnu99 \
   -Werror \
   -Wall \
   -Wconversion \
   -fsanitize=undefined \
   ./test/test.c \
   -I. \
+  -g \
   -o \
   ./build/test_lib
 

@@ -8,7 +8,7 @@ void print_strings(StringList* head) {
 
   StringList* s = head;
   while (NULL != s) {
-    printf("String: %s\n", s->data.str);
+    printf("String: %s\n", s->data.arr);
     fflush(stdout);
     s = s->next;
   }
@@ -47,16 +47,16 @@ String concat_strs(Arena* arena, StringList* head) {
   }
   String res = {
     .size = full_len,
-    .memsize = (sizeof(char) * full_len) + 1, // + 1 for \0
-    .str = NULL
+    .capacity = (sizeof(char) * full_len) + 1, // + 1 for \0
+    .arr = NULL
   };
-  PointerResult p = arena_push(arena, res.memsize);
+  PointerResult p = arena_push(arena, res.capacity);
   if (p.status != SUCCESS) {
     printf("TODO: Handle failed arena push");
     return res;
   }
 
-  res.str = p.val.res;
+  res.arr = p.val.res;
   // TODO: check not null
   cur = head;
   size_t i = 0;
@@ -64,11 +64,11 @@ String concat_strs(Arena* arena, StringList* head) {
 
   while (NULL != cur) {
     for (j = 0; j < cur->data.size; j++) {
-      res.str[i] = cur->data.str[j];
+      res.arr[i] = cur->data.arr[j];
       i++;
     }
     cur = cur -> next;
   }
-  res.str[i] = '\0';
+  res.arr[i] = '\0';
   return res;
 }

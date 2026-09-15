@@ -22,11 +22,13 @@ double get_cycles_per_ns(unsigned long long sample_time_ns) {
   unsigned long long start = rdtsc();
   struct timespec start_os_time;
   struct timespec tp;
-  long elapsed_ns = 0;
+  long long elapsed_ns = 0;
   clock_gettime(CLOCK_MONOTONIC, &start_os_time);
   while (elapsed_ns < sample_time_ns) {
     clock_gettime(CLOCK_MONOTONIC, &tp);
-    elapsed_ns = tp.tv_nsec - start_os_time.tv_nsec;
+    elapsed_ns =
+        (tp.tv_sec - start_os_time.tv_sec) * 1000000000LL +
+        (tp.tv_nsec - start_os_time.tv_nsec);
   }
   unsigned long long end = rdtsc();
   unsigned long long total_cycles = end - start;
@@ -37,9 +39,9 @@ double get_cycles_per_ns(unsigned long long sample_time_ns) {
     exit(1);
   }
   cycles_per_ns = (double)total_cycles_long / (double)elapsed_ns;
-  printf("for %llu total cycles in %lu ns (%lu ms), we calculate %f cycles/ns "
+  printf("for %llu total cycles in %llu ns (%llu ms), we calculate %f cycles/ns "
          "for a frequency of %f\n",
-         total_cycles, elapsed_ns, elapsed_ns / 1000, cycles_per_ns,
+         total_cycles, elapsed_ns, elapsed_ns / 1000000, cycles_per_ns,
          cycles_per_ns * ONE_SECOND_NS);
   return cycles_per_ns;
 }

@@ -4,7 +4,7 @@
 #include "../core/pretty_print.h"
 
 Status test_perf() {
-  const unsigned long long sample_time_ns = 500000;
+  const unsigned long long sample_time_ns = 500000000;// 500ms
   double cycles_per_ns = get_cycles_per_ns(sample_time_ns);
   char msg[1024];
   snprintf(msg, sizeof(msg),

@@ -4,7 +4,71 @@
 #include "../types/types.h"
 #include <string.h>
 
-Status test_nested_resize_array() {
+Status test_double_nested_arrayagainagain() {
+  char *expected = "{\"foo\":[{\"x0\":0,\"y0\":0},{\"x1\":1,\"y1\":1}]}";
+  size_t size = strlen(expected);
+  Json json = parse(expected, size);
+  String result = stringify(json);
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
+    arena_free(json.arena);
+    free(result.arr);
+    return SUCCESS;
+  }
+  debugger();
+  arena_free(json.arena);
+  free(result.arr);
+  return FAIL;
+}
+
+Status test_double_nested_arrayagain() {
+  char *expected = "{\"foo\":[{\"x0\":0,\"y0\":0}]}";
+  size_t size = strlen(expected);
+  Json json = parse(expected, size);
+  String result = stringify(json);
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
+    arena_free(json.arena);
+    free(result.arr);
+    return SUCCESS;
+  }
+  debugger();
+  arena_free(json.arena);
+  free(result.arr);
+  return FAIL;
+}
+
+Status test_double_nested_array() {
+  char *expected = "{\"foo\":[{\"x0\":1}]}";
+  size_t size = strlen(expected);
+  Json json = parse(expected, size);
+  String result = stringify(json);
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
+    arena_free(json.arena);
+    free(result.arr);
+    return SUCCESS;
+  }
+  debugger();
+  arena_free(json.arena);
+  free(result.arr);
+  return FAIL;
+}
+
+Status test_nested_array() {
+  char *expected = "{\"foo\":[1,2,3]}";
+  size_t size = strlen(expected);
+  Json json = parse(expected, size);
+  String result = stringify(json);
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
+    arena_free(json.arena);
+    free(result.arr);
+    return SUCCESS;
+  }
+  debugger();
+  arena_free(json.arena);
+  free(result.arr);
+  return FAIL;
+}
+
+Status test_large_array() {
   char *expected =
       "[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,"
       "27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,"
@@ -195,7 +259,11 @@ void test_json() {
       test_nested_empty_object,
       test_nested_non_emtpy_object_int,
       test_nested_non_emtpy_object_float,
-      test_nested_resize_array,
+      test_large_array,
+      test_nested_array,
+      // test_double_nested_array,
+      // test_double_nested_arrayagain,
+      //test_double_nested_arrayagainagain,
   };
 
   size_t len = sizeof(tests_arr) / sizeof(tests_arr[0]);

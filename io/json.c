@@ -274,6 +274,7 @@ Json parse(char *json_str, size_t json_str_len) {
         continue;
       }
       printf("Error: unexpected character %c at index %zu", c, i);
+      debugger();
       exit(1);
       break;
     }

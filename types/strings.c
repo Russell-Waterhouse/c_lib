@@ -23,15 +23,15 @@ StrResult cstr_to_str(Arena* arena, const char* cstr, u64 size) {
     res.err.msg = p.val.err.msg;
     return res;
   }
-  res.str.str = (char*)p.val.res;
+  res.str.arr = (char*)p.val.res;
 
   for(i = 0; i < size; i++) {
-    res.str.str[i] = cstr[i];
+    res.str.arr[i] = cstr[i];
   }
-  res.str.str[size] = '\0';
+  res.str.arr[size] = '\0';
   res.status = SUCCESS;
   res.str.size = size;
-  res.str.memsize = size;
+  res.str.capacity = size;
 
   return res;
 }
@@ -45,21 +45,21 @@ StrResult cstr_to_str_arena_unsafe(Arena* arena, const char* cstr) {
   StrResult res;
   u64 i;
   size_t size = strlen(cstr);
-  size_t memsize = sizeof(char) * size;
-  PointerResult p = arena_push(arena, memsize);
+  size_t capacity = sizeof(char) * size;
+  PointerResult p = arena_push(arena, capacity);
   if (p.status != SUCCESS) {
     res.status = FAIL;
     res.err.code = p.val.err.code;
     res.err.msg = p.val.err.msg;
     return res;
   }
-  res.str.str = (char*)p.val.res;
+  res.str.arr = (char*)p.val.res;
   for(i = 0; i < size; i++) {
-    res.str.str[i] = cstr[i];
+    res.str.arr[i] = cstr[i];
   }
   res.status = SUCCESS;
   res.str.size = size;
-  res.str.memsize = memsize;
+  res.str.capacity = capacity;
   return res;
 }
 
@@ -70,7 +70,7 @@ u8 str_equal(String s1, String s2) {
     return 0;
   }
   for(i = 0; i < s1.size; i++) {
-    if (s1.str[i] != s2.str[i]) {
+    if (s1.arr[i] != s2.arr[i]) {
       return 0;
     }
   }
@@ -82,8 +82,8 @@ StrResult concat(Arena* arena, String s1, String s2) {
   StrResult s = {0};
   u64 size;
   if (
-    (s1.size > 0 && NULL == s1.str) ||
-    (s2.size > 0 && NULL == s2.str)
+    (s1.size > 0 && NULL == s1.arr) ||
+    (s2.size > 0 && NULL == s2.arr)
   ) {
     s.status = FAIL;
     s.err.code = ERR_INVALID_ARG;
@@ -99,13 +99,13 @@ StrResult concat(Arena* arena, String s1, String s2) {
     s.err.msg = p.val.err.msg;
     return s;
   }
-  s.str.str = p.val.res;
+  s.str.arr = p.val.res;
 
   for(i = 0; i < s1.size; i++) {
-    s.str.str[i] = s1.str[i];
+    s.str.arr[i] = s1.arr[i];
   }
   for(j = 0; j < s2.size; j++, i++) {
-    s.str.str[i] = s2.str[j];
+    s.str.arr[i] = s2.arr[j];
   }
 
   return s;
@@ -113,7 +113,7 @@ StrResult concat(Arena* arena, String s1, String s2) {
 
 u8 ends_with(String s, String search_str) {
   size_t i;
-  if (NULL == s.str || NULL == search_str.str) {
+  if (NULL == s.arr || NULL == search_str.arr) {
     return 0;
   }
 
@@ -122,7 +122,7 @@ u8 ends_with(String s, String search_str) {
   }
 
   for (i = search_str.size; i > 0; i--) {
-    if (search_str.str[i] != s.str[i]) {
+    if (search_str.arr[i] != s.arr[i]) {
       return 0;
     }
   }
@@ -132,7 +132,7 @@ u8 ends_with(String s, String search_str) {
 
 u8 starts_with(String s, String search_str) {
   size_t i;
-  if (NULL == s.str || NULL == search_str.str) {
+  if (NULL == s.arr || NULL == search_str.arr) {
     return 0;
   }
 
@@ -141,7 +141,7 @@ u8 starts_with(String s, String search_str) {
   }
 
   for (i = 0; i > search_str.size; i++) {
-    if (search_str.str[i] != s.str[i]) {
+    if (search_str.arr[i] != s.arr[i]) {
       return 0;
     }
   }
@@ -161,11 +161,11 @@ i64DynArr make_kmp_fail_table(String w) {
      * we make unchecked casts here */
     u64 pos_u64 = (u64)pos;
     u64 cnd_u64 = (u64)cnd;
-    if (w.str[pos_u64] == w.str[cnd_u64]) {
+    if (w.arr[pos_u64] == w.arr[cnd_u64]) {
       t.arr[pos] = t.arr[cnd];
     } else {
       t.arr[pos] = cnd;
-      while (cnd >= 0 && w.str[pos_u64] != w.str[(u64)cnd]) {
+      while (cnd >= 0 && w.arr[pos_u64] != w.arr[(u64)cnd]) {
         cnd = t.arr[cnd];
       }
     }
@@ -186,7 +186,7 @@ i64 find_first(String s, String search_str) {
   i64DynArr t = {0};
   /*initializing t */
   t = make_kmp_fail_table(search_str);
-  if (s.size < search_str.size || NULL == s.str || NULL == search_str.str) {
+  if (s.size < search_str.size || NULL == s.arr || NULL == search_str.arr) {
     i64_free(t);
     return -1;
   }
@@ -194,7 +194,7 @@ i64 find_first(String s, String search_str) {
   j = 0;
   k = 0;
   while (j < s.size) {
-    if (search_str.str[(u64)k] == s.str[(u64)j]) {
+    if (search_str.arr[(u64)k] == s.arr[(u64)j]) {
       j++;
       k++;
       if (k == search_str.size) {
@@ -224,7 +224,7 @@ SizeTDynArr find_all(String s, String search_str) {
   /*initializing t */
   t = make_kmp_fail_table(search_str);
   SizeTDynArr found_positions = {0};
-  if (s.size < search_str.size || NULL == s.str || NULL == search_str.str) {
+  if (s.size < search_str.size || NULL == s.arr || NULL == search_str.arr) {
     i64_free(t);
     return found_positions;
   }
@@ -234,7 +234,7 @@ SizeTDynArr find_all(String s, String search_str) {
   j = 0;
   k = 0;
   while (j < s.size) {
-    if (search_str.str[(u64)k] == s.str[(u64)j]) {
+    if (search_str.arr[(u64)k] == s.arr[(u64)j]) {
       j++;
       k++;
       if (k == search_str.size) {
@@ -264,7 +264,7 @@ SliceResult slice(Arena* arena, String s, u64 start, u64 end) {
   u64 size;
   String slice = {0};
 
-  if (start > end || NULL == s.str) {
+  if (start > end || NULL == s.arr) {
     res.status = FAIL;
     return res;
   }
@@ -276,13 +276,13 @@ SliceResult slice(Arena* arena, String s, u64 start, u64 end) {
     res.status = FAIL;
     return res;
   }
-  slice.str = p.val.res;
+  slice.arr = p.val.res;
 
   for(i = 0; i < end - start; i++) {
-    slice.str[i] = s.str[i+start];
+    slice.arr[i] = s.arr[i+start];
   }
   slice.size = size;
-  slice.memsize = size;
+  slice.capacity = size;
   res.status = SUCCESS;
   res.slice = slice;
   return res;
@@ -296,7 +296,7 @@ SplitResultOption split_str(Arena* arena, String s, char split_char) {
 
   start = 0;
   for (i = 0; i < s.size; i++) {
-    if (s.str[i] == split_char) {
+    if (s.arr[i] == split_char) {
       SliceResult slice_result = slice(arena, s, start, i);
       if (slice_result.status == FAIL) {
         res.status = FAIL;
@@ -333,11 +333,11 @@ String trim(String s);
 
 u64 blank(String s) {
   u64 i;
-  if (NULL == s.str) {
+  if (NULL == s.arr) {
     return 1;
   }
   for (i = 0; i < s.size; i++) {
-    if (s.str[i] != ' ' && s.str[i] != '\t' && s.str[i] != '\0' && s.str[i] != '\n') {
+    if (s.arr[i] != ' ' && s.arr[i] != '\t' && s.arr[i] != '\0' && s.arr[i] != '\n') {
       return 0;
     }
   }
@@ -347,7 +347,7 @@ u64 blank(String s) {
 u64Result str_to_u64(String s) {
   u64Result res;
   u64 result = 0;
-  if (s.size == 0 || NULL == s.str) {
+  if (s.size == 0 || NULL == s.arr) {
     res.status = FAIL;
     res.err.code = ERR_INVALID_ARG;
     res.err.msg = "Cannot cast a null string to u64";
@@ -356,7 +356,7 @@ u64Result str_to_u64(String s) {
 
   u64 i;
   for (i = 0; i < s.size; i++) {
-    char c = s.str[i];
+    char c = s.arr[i];
     if (c < '0' || c > '9') {
       printf("Failed to parse ascii code %d\n", c);
       res.status = FAIL;
@@ -386,7 +386,7 @@ StrResult u64_to_str(Arena* arena, u64 v) {
 
 Status strip_in_place(String s) {
   /* TODO: Finish the rest of this */
-  if (s.str[s.size - 1] == '\n') {
+  if (s.arr[s.size - 1] == '\n') {
     s.size--;
   }
 
@@ -395,13 +395,13 @@ Status strip_in_place(String s) {
 
 DynStrArrResult insert_back(DynStringArr a, String value) {
   DynStrArrResult res;
-  if (a.size >= a.memsize) {
-    if (a.memsize <= a.size) {
-      a.memsize = DYNAMIC_ARRAY_START_SIZE;
+  if (a.size >= a.capacity) {
+    if (a.capacity <= a.size) {
+      a.capacity = DYNAMIC_ARRAY_START_SIZE;
     } else {
-      a.memsize *= 2;
+      a.capacity *= 2;
     }
-    a.arr = (String*)realloc(a.arr, a.memsize);
+    a.arr = (String*)realloc(a.arr, a.capacity);
     if (a.arr == NULL) {
       res.status = FAIL;
       res.err.code = ERR_MEM_ALLOC_FAIL;
@@ -416,7 +416,7 @@ DynStrArrResult insert_back(DynStringArr a, String value) {
 }
 
 void free_dyn_str_arr(DynStringArr a) {
-  if (a.memsize < 1 || NULL == a.arr) {
+  if (a.capacity < 1 || NULL == a.arr) {
     return;
   }
 
@@ -434,10 +434,10 @@ String at(DynStringArr a, size_t index) {
 
 
 void pretty_print_string(String s) {
-  if (s.size > 0 && s.memsize > 0) {
-    printf("[String] Size: %lu; memsize: %lu; value: %s\n", s.size, s.memsize, s.str);
+  if (s.size > 0 && s.capacity > 0) {
+    printf("[String] Size: %lu; capacity: %lu; value: %s\n", s.size, s.capacity, s.arr);
     return;
   }
 
-  printf("[String] Size: %lu; memsize: %lu; value: <NOT PRINTED BECAUSE NOT ALLOCED>\n", s.size, s.memsize);
+  printf("[String] Size: %lu; capacity: %lu; value: <NOT PRINTED BECAUSE NOT ALLOCED>\n", s.size, s.capacity);
 }

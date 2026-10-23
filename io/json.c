@@ -34,6 +34,32 @@ void push_stack_buffer(char c, StackBuffer *buffr) {
   buffr->len++;
 }
 
+void push_JsonStack(JsonValue *j, JsonStack *js) {
+  if (js->len + 1 > STACK_BUFFER_LEN) {
+    puts("json stack buffer overrun");
+    exit(1);
+  }
+  js->stack[js->len] = j;
+  js->len++;
+};
+
+void push_JsonValue(Json *json) {
+  if (json->values_len + 1 > json->values_capacity) {
+    puts("Json capacity overrun");
+    exit(1);
+  }
+  json->values_len++;
+  json->values[json->values_len] = (JsonValue){0};
+}
+
+JsonValue *get_parent(JsonStack *parent_stack) {
+  if (parent_stack->len == 0) {
+    puts("called get_parent on an empty stack");
+    exit(1);
+  }
+  return parent_stack->stack[parent_stack->len - 1];
+}
+
 char pop_stack_buffr(StackBuffer *buffr) {
   if (buffr->len < 1) {
     puts("buffer under run");
@@ -109,10 +135,8 @@ Json parse(char *json_str, size_t json_str_len) {
         // ^
         json.values[json.values_len].type = JSON_value_type_Object;
         state = ReadingObjectKey;
-        parent_stack.stack[parent_stack.len] = &json.values[json.values_len];
-        parent_stack.len++;
-        json.values_len++;
-        json.values[json.values_len] = (JsonValue){0};
+        push_JsonStack(&json.values[json.values_len], &parent_stack);
+        push_JsonValue(&json);
         continue;
       }
       if (ReadyToReadValue == state) {
@@ -123,7 +147,7 @@ Json parse(char *json_str, size_t json_str_len) {
       }
     } break;
     case '}': {
-      JsonValue *parent = parent_stack.stack[parent_stack.len - 1];
+      JsonValue *parent = get_parent(&parent_stack);
       if (JSON_value_type_Object != parent->type) {
         printf("unmatched curly brace at charcter %zu\n", i);
         exit(1);
@@ -148,7 +172,7 @@ Json parse(char *json_str, size_t json_str_len) {
           parent->first_child = &json.values[json.values_len];
         }
         parent_stack.len--;
-        json.values_len++;
+        push_JsonValue(&json);
         state = FinishedReadingObject;
         continue;
       }
@@ -158,13 +182,13 @@ Json parse(char *json_str, size_t json_str_len) {
         float value = flush_stack_buffer_to_float(&scratch);
         json.values[json.values_len].type = JSON_value_type_Float;
         json.values[json.values_len].float_val = value;
-        JsonValue *parent = parent_stack.stack[parent_stack.len - 1];
+        JsonValue *parent = get_parent(&parent_stack);
         parent->len++;
         if (parent->first_child == NULL) {
           parent->first_child = &json.values[json.values_len];
         }
         parent_stack.len--;
-        json.values_len++;
+        push_JsonValue(&json);
         state = FinishedReadingObject;
         continue;
       }
@@ -180,7 +204,7 @@ Json parse(char *json_str, size_t json_str_len) {
       }
     } break;
     case ']': {
-      JsonValue *parent = parent_stack.stack[parent_stack.len - 1];
+      JsonValue *parent = get_parent(&parent_stack);
       if (JSON_value_type_Array != parent->type) {
         puts("unmatched brackes");
         exit(1);
@@ -304,7 +328,7 @@ void copy_float_to_string(String *s, float f) {
   s->size += str_buffr_size;
 }
 
-void copy_key_to_string(String *s, char *key, size_t key_len) {
+void copy_key_and_colon_to_string(String *s, char *key, size_t key_len) {
   // + 2 for the characters `"":`
   if (s->size + key_len + 2 >= s->capacity) {
     puts("over capacity");
@@ -314,6 +338,7 @@ void copy_key_to_string(String *s, char *key, size_t key_len) {
   memcpy(&s->arr[s->size], key, key_len);
   s->size += key_len;
   String_insert_back_or_die(s, '"');
+  String_insert_back_or_die(s, ':');
 }
 
 String stringify(Json json) {
@@ -337,8 +362,7 @@ String stringify(Json json) {
   }
 
   JsonStack parent_stack = {0};
-  parent_stack.stack[0] = &json.values[0];
-  parent_stack.len++;
+  push_JsonStack(&json.values[0], &parent_stack);
   JsonValue *curr = json.values[0].first_child;
   while (curr != NULL) {
     ValueType parent_type = parent_stack.stack[parent_stack.len - 1]->type;
@@ -349,16 +373,14 @@ String stringify(Json json) {
     } break;
     case JSON_value_type_Float: {
       if (parent_type == JSON_value_type_Object) {
-        copy_key_to_string(&s, curr->key, curr->key_len);
-        String_insert_back_or_die(&s, ':');
+        copy_key_and_colon_to_string(&s, curr->key, curr->key_len);
       }
       copy_float_to_string(&s, curr->float_val);
       curr = curr->next_sibling;
     } break;
     case JSON_value_type_Int: {
       if (parent_type == JSON_value_type_Object) {
-        copy_key_to_string(&s, curr->key, curr->key_len);
-        String_insert_back_or_die(&s, ':');
+        copy_key_and_colon_to_string(&s, curr->key, curr->key_len);
       }
       copy_int_to_string(&s, curr->int_val);
       curr = curr->next_sibling;
@@ -374,11 +396,10 @@ String stringify(Json json) {
   }
 
   while (parent_stack.len > 0) {
-    if (parent_stack.stack[parent_stack.len - 1]->type ==
-        JSON_value_type_Object) {
+    JsonValue *parent = get_parent(&parent_stack);
+    if (parent->type == JSON_value_type_Object) {
       String_insert_back_or_die(&s, '}');
-    } else if (parent_stack.stack[parent_stack.len - 1]->type ==
-               JSON_value_type_Array) {
+    } else if (parent->type == JSON_value_type_Array) {
       String_insert_back_or_die(&s, ']');
     } else {
       puts("Invalid parent type");

@@ -92,7 +92,6 @@ Json parse(char *json_str, size_t json_str_len) {
   json.strs = malloc(json.strs_capacity * sizeof(char));
   json.values = malloc(json.values_capacity * sizeof(JsonValue));
   StackBuffer scratch = {0};
-  StackBuffer state_stack = {0};
   ParserStateMachineState state = StartState;
   JsonStack parent_stack = {0};
   // JsonStack sibling_stack = {0}; // TODO: siblings
@@ -104,14 +103,14 @@ Json parse(char *json_str, size_t json_str_len) {
       continue;
     }
     switch (c) {
-    case '{':
-      push_stack_buffer(c, &state_stack);
+    case '{': {
       if (StartState == state) {
         // {"foo":123}
         // ^
         json.values[json.values_len].type = JSON_value_type_Object;
         state = ReadingObjectKey;
         parent_stack.stack[parent_stack.len] = &json.values[json.values_len];
+        parent_stack.len++;
         json.values_len++;
         json.values[json.values_len] = (JsonValue){0};
         continue;
@@ -122,9 +121,10 @@ Json parse(char *json_str, size_t json_str_len) {
         state = ReadingObjectKey;
         continue;
       }
-      break;
-    case '}':
-      if ('{' != pop_stack_buffr(&state_stack)) {
+    } break;
+    case '}': {
+      JsonValue *parent = parent_stack.stack[parent_stack.len - 1];
+      if (JSON_value_type_Object != parent->type) {
         printf("unmatched curly brace at charcter %zu\n", i);
         exit(1);
       }
@@ -134,6 +134,7 @@ Json parse(char *json_str, size_t json_str_len) {
         // this object has no key and no value
         // TODO
         state = FinishedReadingObject;
+        parent_stack.len--;
         continue;
       }
       if (ReadingObjectValueInt == state) {
@@ -142,7 +143,6 @@ Json parse(char *json_str, size_t json_str_len) {
         long int value = flush_stack_buffer_to_int(&scratch);
         json.values[json.values_len].type = JSON_value_type_Int;
         json.values[json.values_len].int_val = value;
-        JsonValue *parent = parent_stack.stack[parent_stack.len];
         parent->len++;
         if (parent->first_child == NULL) {
           parent->first_child = &json.values[json.values_len];
@@ -158,7 +158,7 @@ Json parse(char *json_str, size_t json_str_len) {
         float value = flush_stack_buffer_to_float(&scratch);
         json.values[json.values_len].type = JSON_value_type_Float;
         json.values[json.values_len].float_val = value;
-        JsonValue *parent = parent_stack.stack[parent_stack.len];
+        JsonValue *parent = parent_stack.stack[parent_stack.len - 1];
         parent->len++;
         if (parent->first_child == NULL) {
           parent->first_child = &json.values[json.values_len];
@@ -168,32 +168,36 @@ Json parse(char *json_str, size_t json_str_len) {
         state = FinishedReadingObject;
         continue;
       }
-      break;
-    case '[':
-      push_stack_buffer(c, &state_stack);
+    } break;
+    case '[': {
       if (state == StartState) {
         json.values[json.values_len].type = JSON_value_type_Array;
+        parent_stack.stack[parent_stack.len] = &json.values[json.values_len];
         // TODO:
+        parent_stack.len++;
         state = ReadingArrayElement;
         continue;
       }
-      break;
-    case ']':
-      if ('[' != pop_stack_buffr(&state_stack)) {
+    } break;
+    case ']': {
+      JsonValue *parent = parent_stack.stack[parent_stack.len - 1];
+      if (JSON_value_type_Array != parent->type) {
         puts("unmatched brackes");
         exit(1);
       }
       if (ReadingArrayElement == state) {
         // this array has no values
         state = FinishedReadingArray;
+        parent_stack.len--;
         continue;
       }
       if (ReadingArrayElementInt == state) {
         state = FinishedReadingArray;
+        parent_stack.len--;
         // TODO
         break;
       }
-    case '"':
+    case '"': {
       if (state == ReadingObjectKeyString) {
         state = FinishedReadingObjectKey;
         continue;
@@ -206,8 +210,8 @@ Json parse(char *json_str, size_t json_str_len) {
       }
       printf("Error: unexpected character %c at index %zu", c, i);
       exit(1);
-      break;
-    case ',':
+    } break;
+    case ',': {
       if (ReadingArrayElementInt == state) {
         // TODO
         continue;
@@ -220,8 +224,8 @@ Json parse(char *json_str, size_t json_str_len) {
       }
       printf("Error: unexpected character %c at index %zu", c, i);
       exit(1);
-      break;
-    case ':':
+    } break;
+    case ':': {
       if (FinishedReadingObjectKey == state) {
         state = ReadyToReadValue;
       } else {
@@ -229,7 +233,7 @@ Json parse(char *json_str, size_t json_str_len) {
         exit(1);
       }
       continue;
-      break;
+    } break;
     default: {
       if (ReadyToReadValue == state && isdigit(c)) {
         state = ReadingObjectValueInt;
@@ -264,13 +268,14 @@ Json parse(char *json_str, size_t json_str_len) {
       printf("Error: unexpected character %c at index %zu", c, i);
       debugger();
       exit(1);
-      break;
+    } break;
     }
     }
   }
 
-  if (state_stack.len > 0) {
+  if (parent_stack.len > 0) {
     puts("Unclosed characters in JSON");
+    debugger();
     exit(1);
   }
 

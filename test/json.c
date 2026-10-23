@@ -207,6 +207,8 @@ free(json.strs);
   return FAIL;
 }
 
+*/
+
 Status test_empty_array() {
   char *expected = "[]";
   size_t size = strlen(expected);
@@ -224,7 +226,6 @@ free(json.strs);
   free(result.arr);
   return FAIL;
 }
-*/
 
 Status test_single_object_float() {
   char *expected = "{\"key\":1.100000}";
@@ -285,7 +286,7 @@ void test_json() {
       test_empty_json,
       test_single_object_int,
       test_single_object_float,
-      // test_empty_array,
+      test_empty_array,
       // test_single_element_array,
       // test_basic_array,
       // test_nested_empty_object,

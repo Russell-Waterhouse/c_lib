@@ -342,7 +342,14 @@ String stringify(Json json) {
     } break;
     case JSON_value_type_Array: {
     } break;
-    case JSON_value_type_Float:
+    case JSON_value_type_Float: {
+      if (parent_type == JSON_value_type_Object) {
+        copy_key_to_string(&s, curr->key, curr->key_len);
+        String_insert_back_or_die(&s, ':');
+      }
+      copy_float_to_string(&s, curr->float_val);
+      curr = curr->next_sibling;
+    } break;
     case JSON_value_type_Int: {
       if (parent_type == JSON_value_type_Object) {
         copy_key_to_string(&s, curr->key, curr->key_len);
@@ -351,9 +358,10 @@ String stringify(Json json) {
       copy_int_to_string(&s, curr->int_val);
       curr = curr->next_sibling;
     } break;
-    case JSON_value_type_Boolean:
-    case JSON_value_type_String:
-      break;
+    case JSON_value_type_Boolean: {
+    } break;
+    case JSON_value_type_String: {
+    } break;
     default:
       puts("Should never be here");
       exit(1);

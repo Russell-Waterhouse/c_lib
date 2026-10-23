@@ -11,12 +11,14 @@ Status test_double_nested_arrayagainagain() {
   Json json = parse(expected, size);
   String result = stringify(json);
   if (size == result.size && !memcmp(expected, result.arr, result.size)) {
-    arena_free(json.arena);
+        free(json.values);
+free(json.strs);
     free(result.arr);
     return SUCCESS;
   }
   debugger();
-  arena_free(json.arena);
+      free(json.values);
+free(json.strs);
   free(result.arr);
   return FAIL;
 }
@@ -27,12 +29,14 @@ Status test_double_nested_arrayagain() {
   Json json = parse(expected, size);
   String result = stringify(json);
   if (size == result.size && !memcmp(expected, result.arr, result.size)) {
-    arena_free(json.arena);
+        free(json.values);
+free(json.strs);
     free(result.arr);
     return SUCCESS;
   }
   debugger();
-  arena_free(json.arena);
+      free(json.values);
+free(json.strs);
   free(result.arr);
   return FAIL;
 }
@@ -43,12 +47,14 @@ Status test_double_nested_array() {
   Json json = parse(expected, size);
   String result = stringify(json);
   if (size == result.size && !memcmp(expected, result.arr, result.size)) {
-    arena_free(json.arena);
+        free(json.values);
+free(json.strs);
     free(result.arr);
     return SUCCESS;
   }
   debugger();
-  arena_free(json.arena);
+      free(json.values);
+free(json.strs);
   free(result.arr);
   return FAIL;
 }
@@ -59,12 +65,14 @@ Status test_nested_array() {
   Json json = parse(expected, size);
   String result = stringify(json);
   if (size == result.size && !memcmp(expected, result.arr, result.size)) {
-    arena_free(json.arena);
+        free(json.values);
+free(json.strs);
     free(result.arr);
     return SUCCESS;
   }
   debugger();
-  arena_free(json.arena);
+      free(json.values);
+free(json.strs);
   free(result.arr);
   return FAIL;
 }
@@ -80,12 +88,14 @@ Status test_large_array() {
   Json json = parse(expected, size);
   String result = stringify(json);
   if (size == result.size && !memcmp(expected, result.arr, result.size)) {
-    arena_free(json.arena);
+        free(json.values);
+free(json.strs);
     free(result.arr);
     return SUCCESS;
   }
   debugger();
-  arena_free(json.arena);
+      free(json.values);
+free(json.strs);
   free(result.arr);
   return FAIL;
 }
@@ -96,12 +106,14 @@ Status test_nested_non_emtpy_object_float() {
   Json json = parse(expected, size);
   String result = stringify(json);
   if (size == result.size && !memcmp(expected, result.arr, result.size)) {
-    arena_free(json.arena);
+        free(json.values);
+free(json.strs);
     free(result.arr);
     return SUCCESS;
   }
   debugger();
-  arena_free(json.arena);
+      free(json.values);
+free(json.strs);
   free(result.arr);
   return FAIL;
 }
@@ -112,12 +124,14 @@ Status test_nested_non_emtpy_object_int() {
   Json json = parse(expected, size);
   String result = stringify(json);
   if (size == result.size && !memcmp(expected, result.arr, result.size)) {
-    arena_free(json.arena);
+        free(json.values);
+free(json.strs);
     free(result.arr);
     return SUCCESS;
   }
   debugger();
-  arena_free(json.arena);
+      free(json.values);
+free(json.strs);
   free(result.arr);
   return FAIL;
 }
@@ -128,12 +142,14 @@ Status test_two_keys_object() {
   Json json = parse(expected, size);
   String result = stringify(json);
   if (size == result.size && !memcmp(expected, result.arr, result.size)) {
-    arena_free(json.arena);
+        free(json.values);
+free(json.strs);
     free(result.arr);
     return SUCCESS;
   }
   debugger();
-  arena_free(json.arena);
+      free(json.values);
+free(json.strs);
   free(result.arr);
   return FAIL;
 }
@@ -144,12 +160,14 @@ Status test_nested_empty_object() {
   Json json = parse(expected, size);
   String result = stringify(json);
   if (size == result.size && !memcmp(expected, result.arr, result.size)) {
-    arena_free(json.arena);
+        free(json.values);
+free(json.strs);
     free(result.arr);
     return SUCCESS;
   }
   debugger();
-  arena_free(json.arena);
+      free(json.values);
+free(json.strs);
   free(result.arr);
   return FAIL;
 }
@@ -160,12 +178,14 @@ Status test_basic_array() {
   Json json = parse(expected, size);
   String result = stringify(json);
   if (size == result.size && !memcmp(expected, result.arr, result.size)) {
-    arena_free(json.arena);
+        free(json.values);
+free(json.strs);
     free(result.arr);
     return SUCCESS;
   }
   debugger();
-  arena_free(json.arena);
+      free(json.values);
+free(json.strs);
   free(result.arr);
   return FAIL;
 }
@@ -176,11 +196,13 @@ Status test_single_element_array() {
   Json json = parse(expected, size);
   String result = stringify(json);
   if (size == result.size && !memcmp(expected, result.arr, result.size)) {
-    arena_free(json.arena);
+        free(json.values);
+free(json.strs);
     free(result.arr);
     return SUCCESS;
   }
-  arena_free(json.arena);
+      free(json.values);
+free(json.strs);
   free(result.arr);
   return FAIL;
 }
@@ -191,15 +213,18 @@ Status test_empty_array() {
   Json json = parse(expected, size);
   String result = stringify(json);
   if (size == result.size && !memcmp(expected, result.arr, result.size)) {
-    arena_free(json.arena);
+        free(json.values);
+free(json.strs);
     free(result.arr);
     return SUCCESS;
   }
   debugger();
-  arena_free(json.arena);
+      free(json.values);
+free(json.strs);
   free(result.arr);
   return FAIL;
 }
+*/
 
 Status test_single_object_float() {
   char *expected = "{\"key\":1.100000}";
@@ -207,15 +232,16 @@ Status test_single_object_float() {
   Json json = parse(expected, size);
   String result = stringify(json);
   if (size == result.size && !memcmp(expected, result.arr, result.size)) {
-    arena_free(json.arena);
+    free(json.values);
+    free(json.strs);
     free(result.arr);
     return SUCCESS;
   }
-  arena_free(json.arena);
+  free(json.values);
+  free(json.strs);
   free(result.arr);
   return FAIL;
 }
-*/
 
 Status test_single_object_int() {
   char *expected = "{\"key\":12345}";
@@ -258,7 +284,7 @@ void test_json() {
   Status (*tests_arr[])(void) = {
       test_empty_json,
       test_single_object_int,
-      // test_single_object_float,
+      test_single_object_float,
       // test_empty_array,
       // test_single_element_array,
       // test_basic_array,

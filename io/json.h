@@ -18,31 +18,34 @@ typedef enum {
   JSON_value_type_Object,
 } ValueType;
 
-// We're just being lazy and using a fat struct here, any field that isn't
-// defined as used by .type will just be garbage.
 typedef struct JsonValue {
   ValueType type;
-  long int int_val;
-  float float_val;
-  String str_val;
-  bool bool_val;
-  size_t len;
-  size_t capacity;
-  struct JsonValue *arr_values; // only when value type is array
-  JsonKV *obj_pairs; // only when value type is object
+  char *key;
+  size_t key_len;
+  struct JsonValue *first_child;
+  struct JsonValue *next_sibling;
+  union {
+    i64 int_val;
+    float float_val;
+    char *str_val;
+    size_t len;
+    bool bool_val;
+  };
 } JsonValue;
 
-struct JsonKV {
-  String key;
-  JsonValue value;
-};
-
-typedef struct {
-  JsonValue value;
-  Arena *arena;
+typedef struct Json {
+  JsonValue *values;
+  size_t values_len;
+  size_t values_capacity;
+  char *strs;
+  size_t strs_len;
+  size_t strs_capacity;
 } Json;
 
 Json parse(char *json_str, size_t json_str_len);
 String stringify(Json json);
+
+// everything above is deprecated
+// everything below is the new way of doing it
 
 #endif // JSON_H

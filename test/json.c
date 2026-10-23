@@ -190,24 +190,24 @@ free(json.strs);
   return FAIL;
 }
 
+*/
+
 Status test_single_element_array() {
   char *expected = "[1]";
   size_t size = strlen(expected);
   Json json = parse(expected, size);
   String result = stringify(json);
   if (size == result.size && !memcmp(expected, result.arr, result.size)) {
-        free(json.values);
-free(json.strs);
+    free(json.values);
+    free(json.strs);
     free(result.arr);
     return SUCCESS;
   }
-      free(json.values);
-free(json.strs);
+  free(json.values);
+  free(json.strs);
   free(result.arr);
   return FAIL;
 }
-
-*/
 
 Status test_empty_array() {
   char *expected = "[]";
@@ -215,14 +215,14 @@ Status test_empty_array() {
   Json json = parse(expected, size);
   String result = stringify(json);
   if (size == result.size && !memcmp(expected, result.arr, result.size)) {
-        free(json.values);
-free(json.strs);
+    free(json.values);
+    free(json.strs);
     free(result.arr);
     return SUCCESS;
   }
   debugger();
-      free(json.values);
-free(json.strs);
+  free(json.values);
+  free(json.strs);
   free(result.arr);
   return FAIL;
 }
@@ -287,7 +287,7 @@ void test_json() {
       test_single_object_int,
       test_single_object_float,
       test_empty_array,
-      // test_single_element_array,
+      test_single_element_array,
       // test_basic_array,
       // test_nested_empty_object,
       // test_nested_non_emtpy_object_int,

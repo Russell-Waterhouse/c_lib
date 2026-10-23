@@ -20,6 +20,14 @@ typedef struct {
   size_t len;
 } StackBuffer;
 
+// TODO: use in JsonStack
+/*
+typedef struct {
+  JsonValue *parent;
+  JsonValue *last_sibling;
+}JsonFrame;
+*/
+
 typedef struct {
   JsonValue *stack[STACK_BUFFER_LEN];
   size_t len;
@@ -196,9 +204,8 @@ Json parse(char *json_str, size_t json_str_len) {
     case '[': {
       if (state == StartState) {
         json.values[json.values_len].type = JSON_value_type_Array;
-        parent_stack.stack[parent_stack.len] = &json.values[json.values_len];
-        // TODO:
-        parent_stack.len++;
+        push_JsonStack(&json.values[json.values_len], &parent_stack);
+        push_JsonValue(&json);
         state = ReadingArrayElement;
         continue;
       }
@@ -216,9 +223,21 @@ Json parse(char *json_str, size_t json_str_len) {
         continue;
       }
       if (ReadingArrayElementInt == state) {
+        // [123, 456]
+        //          ^
+        long int value = flush_stack_buffer_to_int(&scratch);
+        json.values[json.values_len].type = JSON_value_type_Int;
+        json.values[json.values_len].int_val = value;
+        parent->len++;
+        if (parent->first_child == NULL) {
+          parent->first_child = &json.values[json.values_len];
+        }
+        parent_stack.len--;
+        push_JsonValue(&json);
+        state = FinishedReadingObject;
+        continue;
         state = FinishedReadingArray;
         parent_stack.len--;
-        // TODO
         break;
       }
     case '"': {

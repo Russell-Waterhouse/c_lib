@@ -25,7 +25,7 @@ debug:
     -g \
     -o \
     ./build/test_lib
-  gdb ./build/test_lib
+  gdb ./build/test_lib -ex "run"
 
 
 d: debug

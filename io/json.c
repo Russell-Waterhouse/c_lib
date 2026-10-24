@@ -20,18 +20,24 @@ typedef struct {
   size_t len;
 } StackBuffer;
 
-// TODO: use in JsonStack
-/*
 typedef struct {
   JsonValue *parent;
   JsonValue *last_sibling;
-}JsonFrame;
-*/
+} JsonFrame;
 
 typedef struct {
-  JsonValue *stack[STACK_BUFFER_LEN];
+  JsonFrame stack[STACK_BUFFER_LEN];
   size_t len;
 } JsonStack;
+
+void pop_context_stack(JsonStack *st) {
+  if (st->len == 0) {
+    puts("tried to pop an empty stack");
+    debugger();
+    exit(1);
+  }
+  st->len--;
+}
 
 void push_stack_buffer(char c, StackBuffer *buffr) {
   if (buffr->len + 1 > STACK_BUFFER_LEN) {
@@ -42,12 +48,12 @@ void push_stack_buffer(char c, StackBuffer *buffr) {
   buffr->len++;
 }
 
-void push_JsonStack(JsonValue *j, JsonStack *js) {
+void push_frame_parent(JsonValue *j, JsonStack *js) {
   if (js->len + 1 > STACK_BUFFER_LEN) {
     puts("json stack buffer overrun");
     exit(1);
   }
-  js->stack[js->len] = j;
+  js->stack[js->len].parent = j;
   js->len++;
 };
 
@@ -60,12 +66,20 @@ void push_JsonValue(Json *json) {
   json->values[json->values_len] = (JsonValue){0};
 }
 
-JsonValue *get_parent(JsonStack *parent_stack) {
-  if (parent_stack->len == 0) {
+JsonValue *get_parent(JsonStack *context_stack) {
+  if (context_stack->len == 0) {
     puts("called get_parent on an empty stack");
     exit(1);
   }
-  return parent_stack->stack[parent_stack->len - 1];
+  return context_stack->stack[context_stack->len - 1].parent;
+}
+
+JsonValue *get_last_sibling(JsonStack *context_stack) {
+  if (context_stack->len == 0) {
+    puts("called get_last_sibling on an empty stack");
+    exit(1);
+  }
+  return context_stack->stack[context_stack->len - 1].last_sibling;
 }
 
 char pop_stack_buffr(StackBuffer *buffr) {
@@ -127,8 +141,7 @@ Json parse(char *json_str, size_t json_str_len) {
   json.values = malloc(json.values_capacity * sizeof(JsonValue));
   StackBuffer scratch = {0};
   ParserStateMachineState state = StartState;
-  JsonStack parent_stack = {0};
-  // JsonStack sibling_stack = {0}; // TODO: siblings
+  JsonStack context_stack = {0};
 
   json.values[json.values_len] = (JsonValue){0};
   for (size_t i = 0; i < json_str_len; i++) {
@@ -143,7 +156,7 @@ Json parse(char *json_str, size_t json_str_len) {
         // ^
         json.values[json.values_len].type = JSON_value_type_Object;
         state = ReadingObjectKey;
-        push_JsonStack(&json.values[json.values_len], &parent_stack);
+        push_frame_parent(&json.values[json.values_len], &context_stack);
         push_JsonValue(&json);
         continue;
       }
@@ -155,7 +168,7 @@ Json parse(char *json_str, size_t json_str_len) {
       }
     } break;
     case '}': {
-      JsonValue *parent = get_parent(&parent_stack);
+      JsonValue *parent = get_parent(&context_stack);
       if (JSON_value_type_Object != parent->type) {
         printf("unmatched curly brace at charcter %zu\n", i);
         exit(1);
@@ -166,7 +179,7 @@ Json parse(char *json_str, size_t json_str_len) {
         // this object has no key and no value
         // TODO
         state = FinishedReadingObject;
-        parent_stack.len--;
+        pop_context_stack(&context_stack);
         continue;
       }
       if (ReadingObjectValueInt == state) {
@@ -179,7 +192,7 @@ Json parse(char *json_str, size_t json_str_len) {
         if (parent->first_child == NULL) {
           parent->first_child = &json.values[json.values_len];
         }
-        parent_stack.len--;
+        pop_context_stack(&context_stack);
         push_JsonValue(&json);
         state = FinishedReadingObject;
         continue;
@@ -190,12 +203,12 @@ Json parse(char *json_str, size_t json_str_len) {
         float value = flush_stack_buffer_to_float(&scratch);
         json.values[json.values_len].type = JSON_value_type_Float;
         json.values[json.values_len].float_val = value;
-        JsonValue *parent = get_parent(&parent_stack);
+        JsonValue *parent = get_parent(&context_stack);
         parent->len++;
         if (parent->first_child == NULL) {
           parent->first_child = &json.values[json.values_len];
         }
-        parent_stack.len--;
+        pop_context_stack(&context_stack);
         push_JsonValue(&json);
         state = FinishedReadingObject;
         continue;
@@ -203,15 +216,19 @@ Json parse(char *json_str, size_t json_str_len) {
     } break;
     case '[': {
       if (state == StartState) {
-        json.values[json.values_len].type = JSON_value_type_Array;
-        push_JsonStack(&json.values[json.values_len], &parent_stack);
+        // [1,2,3]
+        // ^
+        JsonValue *curr = &json.values[json.values_len];
+        curr->type = JSON_value_type_Array;
+        push_frame_parent(&json.values[json.values_len], &context_stack);
         push_JsonValue(&json);
         state = ReadingArrayElement;
         continue;
       }
     } break;
     case ']': {
-      JsonValue *parent = get_parent(&parent_stack);
+      JsonValue *parent = get_parent(&context_stack);
+      JsonValue *last_sibling = get_last_sibling(&context_stack);
       if (JSON_value_type_Array != parent->type) {
         puts("unmatched brackes");
         exit(1);
@@ -219,27 +236,31 @@ Json parse(char *json_str, size_t json_str_len) {
       if (ReadingArrayElement == state) {
         // this array has no values
         state = FinishedReadingArray;
-        parent_stack.len--;
+        pop_context_stack(&context_stack);
         continue;
       }
       if (ReadingArrayElementInt == state) {
         // [123, 456]
         //          ^
         long int value = flush_stack_buffer_to_int(&scratch);
-        json.values[json.values_len].type = JSON_value_type_Int;
-        json.values[json.values_len].int_val = value;
+        JsonValue *curr = &json.values[json.values_len];
+        curr->type = JSON_value_type_Int;
+        curr->int_val = value;
         parent->len++;
         if (parent->first_child == NULL) {
           parent->first_child = &json.values[json.values_len];
         }
-        parent_stack.len--;
+        if (NULL == last_sibling) {
+          context_stack.stack[context_stack.len].last_sibling = curr;
+        } else if (NULL == last_sibling->next_sibling) {
+          last_sibling->next_sibling = curr;
+        }
+        pop_context_stack(&context_stack);
         push_JsonValue(&json);
-        state = FinishedReadingObject;
-        continue;
         state = FinishedReadingArray;
-        parent_stack.len--;
-        break;
+        continue;
       }
+      break;
     case '"': {
       if (state == ReadingObjectKeyString) {
         state = FinishedReadingObjectKey;
@@ -255,8 +276,21 @@ Json parse(char *json_str, size_t json_str_len) {
       exit(1);
     } break;
     case ',': {
+      parent = get_parent(&context_stack);
+      last_sibling = get_last_sibling(&context_stack);
+      long int value = flush_stack_buffer_to_int(&scratch);
       if (ReadingArrayElementInt == state) {
-        // TODO
+        JsonValue *curr = &json.values[json.values_len];
+        curr->type = JSON_value_type_Int;
+        curr->int_val = value;
+        if (NULL == parent->first_child) {
+          parent->first_child = curr;
+        }
+        if (NULL != last_sibling) {
+          last_sibling->next_sibling = curr;
+        }
+        context_stack.stack[context_stack.len - 1].last_sibling = curr;
+        push_JsonValue(&json);
         continue;
       }
       if (ReadingObjectValueInt == state) {
@@ -316,7 +350,7 @@ Json parse(char *json_str, size_t json_str_len) {
     }
   }
 
-  if (parent_stack.len > 0) {
+  if (context_stack.len > 0) {
     puts("Unclosed characters in JSON");
     debugger();
     exit(1);
@@ -380,11 +414,17 @@ String stringify(Json json) {
     String_insert_back_or_die(&s, '[');
   }
 
-  JsonStack parent_stack = {0};
-  push_JsonStack(&json.values[0], &parent_stack);
+  JsonStack context_stack = {0};
+  push_frame_parent(&json.values[0], &context_stack);
   JsonValue *curr = json.values[0].first_child;
-  while (curr != NULL) {
-    ValueType parent_type = parent_stack.stack[parent_stack.len - 1]->type;
+  while (curr != NULL || context_stack.len > 1) {
+    if (curr == NULL) {
+      curr = context_stack.stack[context_stack.len - 1].last_sibling;
+      pop_context_stack(&context_stack);
+      continue;
+    }
+
+    ValueType parent_type = get_parent(&context_stack)->type;
     switch (curr->type) {
     case JSON_value_type_Object: {
     } break;
@@ -403,6 +443,9 @@ String stringify(Json json) {
       }
       copy_int_to_string(&s, curr->int_val);
       curr = curr->next_sibling;
+      if (NULL != curr) {
+        String_insert_back_or_die(&s, ',');
+      }
     } break;
     case JSON_value_type_Boolean: {
     } break;
@@ -414,8 +457,8 @@ String stringify(Json json) {
     }
   }
 
-  while (parent_stack.len > 0) {
-    JsonValue *parent = get_parent(&parent_stack);
+  while (context_stack.len > 0) {
+    JsonValue *parent = get_parent(&context_stack);
     if (parent->type == JSON_value_type_Object) {
       String_insert_back_or_die(&s, '}');
     } else if (parent->type == JSON_value_type_Array) {
@@ -424,7 +467,7 @@ String stringify(Json json) {
       puts("Invalid parent type");
       exit(1);
     }
-    parent_stack.len--;
+    pop_context_stack(&context_stack);
   }
 
   return s;

@@ -45,7 +45,4 @@ typedef struct Json {
 Json parse(char *json_str, size_t json_str_len);
 String stringify(Json json);
 
-// everything above is deprecated
-// everything below is the new way of doing it
-
 #endif // JSON_H

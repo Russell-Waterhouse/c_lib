@@ -4,7 +4,7 @@
 #include "../types/types.h"
 #include <string.h>
 
-Status test_double_nested_arrayagainagain() {
+Status test_double_nested_array_two_objects_two_keys() {
   char *expected = "{\"foo\":[{\"x0\":0,\"y0\":0},{\"x1\":1,\"y1\":1}]}";
   size_t size = strlen(expected);
   Json json = parse(expected, size);
@@ -22,7 +22,7 @@ Status test_double_nested_arrayagainagain() {
   return FAIL;
 }
 
-Status test_double_nested_arrayagain() {
+Status test_double_nested_array_two_key_object() {
   char *expected = "{\"foo\":[{\"x0\":0,\"y0\":0}]}";
   size_t size = strlen(expected);
   Json json = parse(expected, size);
@@ -296,8 +296,8 @@ void test_json() {
       test_large_array,
       test_nested_array,
       test_double_nested_array,
-      // test_double_nested_arrayagain,
-      // test_double_nested_arrayagainagain,
+      // test_double_nested_array_two_key_object,
+      // test_double_nested_array_two_objects_two_keys,
   };
 
   size_t len = sizeof(tests_arr) / sizeof(tests_arr[0]);

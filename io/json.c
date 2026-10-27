@@ -337,10 +337,10 @@ Json parse(char *json_str, size_t json_str_len) {
     }
       debugger break;
     case ',': {
-      long int value = flush_stack_buffer_to_int(&scratch);
       JsonValue *curr = &json.values[json.values_len];
       if (ReadingArrayElementInt == state) {
         curr->type = JSON_value_type_Int;
+        long int value = flush_stack_buffer_to_int(&scratch);
         curr->int_val = value;
         update_context_with_child_element(&context_stack, curr);
         push_JsonValue(&json);
@@ -348,6 +348,7 @@ Json parse(char *json_str, size_t json_str_len) {
       }
       if (ReadingObjectValueInt == state) {
         curr->type = JSON_value_type_Int;
+        long int value = flush_stack_buffer_to_int(&scratch);
         curr->int_val = value;
         update_context_with_child_element(&context_stack, curr);
         push_JsonValue(&json);
@@ -357,6 +358,15 @@ Json parse(char *json_str, size_t json_str_len) {
       if (FinishedReadingObject == state) {
         push_JsonValue(&json);
         state = ReadingArrayElement;
+        continue;
+      }
+      if (ReadingObjectValueFloat == state) {
+        curr->type = JSON_value_type_Float;
+        float value = flush_stack_buffer_to_float(&scratch);
+        curr->float_val = value;
+        update_context_with_child_element(&context_stack, curr);
+        push_JsonValue(&json);
+        state = FinishedReadingObjectValue;
         continue;
       }
       printf("Error: unexpected character %c at index %zu", c, i);
@@ -401,6 +411,11 @@ Json parse(char *json_str, size_t json_str_len) {
       }
       if (ReadingObjectValueInt == state && c == '.') {
         state = ReadingObjectValueFloat;
+        add_char_to_stack_buffer(&scratch, c);
+        continue;
+      }
+      if (ReadyToReadObjectValue == state && c == '-') {
+        state = ReadingObjectValueInt;
         add_char_to_stack_buffer(&scratch, c);
         continue;
       }
@@ -526,6 +541,9 @@ String stringify(Json json) {
       }
       copy_float_to_string(&s, curr->float_val);
       curr = curr->next_sibling;
+      if (NULL != curr) {
+        String_insert_back_or_die(&s, ',');
+      }
     } break;
     case JSON_value_type_Int: {
       if (parent_type == JSON_value_type_Object) {

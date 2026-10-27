@@ -48,12 +48,13 @@ void push_stack_buffer(char c, StackBuffer *buffr) {
   buffr->len++;
 }
 
-void push_frame_parent(JsonValue *j, JsonStack *js) {
+void push_jsonstack_frame(JsonValue *parent, JsonStack *js) {
   if (js->len + 1 > STACK_BUFFER_LEN) {
     puts("json stack buffer overrun");
     exit(1);
   }
-  js->stack[js->len].parent = j;
+  js->stack[js->len].parent = parent;
+  js->stack[js->len].last_sibling = NULL;
   js->len++;
 };
 
@@ -89,6 +90,10 @@ void update_context_with_child_element(JsonStack *context_stack,
   JsonValue *last_sibling = get_last_sibling(context_stack);
   if (NULL == parent->first_child) {
     parent->first_child = curr;
+  }
+  JsonValue voidVal = {0};
+  if (!memcmp(&voidVal, curr, sizeof(JsonValue))) {
+    debugger
   }
   if (NULL != last_sibling) {
     last_sibling->next_sibling = curr;
@@ -168,7 +173,7 @@ Json parse(char *json_str, size_t json_str_len) {
         // ^
         json.values[json.values_len].type = JSON_value_type_Object;
         state = ReadingObjectKey;
-        push_frame_parent(&json.values[json.values_len], &context_stack);
+        push_jsonstack_frame(&json.values[json.values_len], &context_stack);
         push_JsonValue(&json);
         continue;
       }
@@ -179,7 +184,7 @@ Json parse(char *json_str, size_t json_str_len) {
         curr->type = JSON_value_type_Object;
         state = ReadingObjectKey;
         update_context_with_child_element(&context_stack, curr);
-        push_frame_parent(&json.values[json.values_len], &context_stack);
+        push_jsonstack_frame(&json.values[json.values_len], &context_stack);
         push_JsonValue(&json);
         continue;
       }
@@ -190,7 +195,7 @@ Json parse(char *json_str, size_t json_str_len) {
         curr->type = JSON_value_type_Object;
         state = ReadingObjectKey;
         update_context_with_child_element(&context_stack, curr);
-        push_frame_parent(&json.values[json.values_len], &context_stack);
+        push_jsonstack_frame(&json.values[json.values_len], &context_stack);
         push_JsonValue(&json);
         continue;
       }
@@ -217,6 +222,7 @@ Json parse(char *json_str, size_t json_str_len) {
         JsonValue *curr = &json.values[json.values_len - 1];
         update_context_with_child_element(&context_stack, curr);
         pop_context_stack(&context_stack);
+        push_JsonValue(&json);
         state = FinishedReadingObject;
         continue;
       }
@@ -249,10 +255,7 @@ Json parse(char *json_str, size_t json_str_len) {
       if (state == FinishedReadingArray) {
         // {"key":[1,2,3]}
         //               ^
-        JsonValue *curr = &json.values[json.values_len];
-        update_context_with_child_element(&context_stack, curr);
         pop_context_stack(&context_stack);
-        push_JsonValue(&json);
         state = FinishedReadingObject;
         continue;
       }
@@ -264,7 +267,7 @@ Json parse(char *json_str, size_t json_str_len) {
         // ^
         JsonValue *curr = &json.values[json.values_len];
         curr->type = JSON_value_type_Array;
-        push_frame_parent(&json.values[json.values_len], &context_stack);
+        push_jsonstack_frame(&json.values[json.values_len], &context_stack);
         push_JsonValue(&json);
         state = ReadingArrayElement;
         continue;
@@ -276,7 +279,7 @@ Json parse(char *json_str, size_t json_str_len) {
         curr->type = JSON_value_type_Array;
         update_context_with_child_element(&context_stack, curr);
         // TODO: handle next sibling here?
-        push_frame_parent(&json.values[json.values_len], &context_stack);
+        push_jsonstack_frame(&json.values[json.values_len], &context_stack);
         push_JsonValue(&json);
         state = ReadingArrayElement;
         continue;
@@ -311,10 +314,7 @@ Json parse(char *json_str, size_t json_str_len) {
       if (FinishedReadingObject == state) {
         // [{"key":123}]
         //             ^
-        JsonValue *curr = &json.values[json.values_len];
-        update_context_with_child_element(&context_stack, curr);
         pop_context_stack(&context_stack);
-        push_JsonValue(&json);
         state = FinishedReadingArray;
         continue;
       }
@@ -354,8 +354,13 @@ Json parse(char *json_str, size_t json_str_len) {
         state = FinishedReadingObjectValue;
         continue;
       }
+      if (FinishedReadingObject == state) {
+        push_JsonValue(&json);
+        state = ReadingArrayElement;
+        continue;
+      }
       printf("Error: unexpected character %c at index %zu", c, i);
-      exit(1);
+      debugger exit(1);
     }
       debugger break;
     case ':': {
@@ -470,11 +475,18 @@ String stringify(Json json) {
   }
 
   JsonStack context_stack = {0};
-  push_frame_parent(&json.values[0], &context_stack);
+  push_jsonstack_frame(&json.values[0], &context_stack);
   JsonValue *curr = json.values[0].first_child;
   while (curr != NULL || context_stack.len > 1) {
+    // debugger
     if (curr == NULL) {
-      curr = context_stack.stack[context_stack.len - 1].last_sibling;
+      JsonValue *last_sibling = get_last_sibling(&context_stack);
+      if (NULL != last_sibling && NULL != last_sibling->next_sibling) {
+        curr = last_sibling->next_sibling;
+        String_insert_back_or_die(&s, ',');
+        context_stack.stack[context_stack.len - 1].last_sibling = NULL;
+        continue;
+      }
       ValueType parent_type = get_parent(&context_stack)->type;
       if (parent_type == JSON_value_type_Object) {
         String_insert_back_or_die(&s, '}');
@@ -495,7 +507,8 @@ String stringify(Json json) {
         copy_key_and_colon_to_string(&s, curr->key, curr->key_len);
       }
       String_insert_back_or_die(&s, '{');
-      push_frame_parent(curr, &context_stack);
+      context_stack.stack[context_stack.len - 1].last_sibling = curr;
+      push_jsonstack_frame(curr, &context_stack);
       curr = curr->first_child;
     } break;
     case JSON_value_type_Array: {
@@ -503,7 +516,8 @@ String stringify(Json json) {
         copy_key_and_colon_to_string(&s, curr->key, curr->key_len);
       }
       String_insert_back_or_die(&s, '[');
-      push_frame_parent(curr, &context_stack);
+      context_stack.stack[context_stack.len - 1].last_sibling = curr;
+      push_jsonstack_frame(curr, &context_stack);
       curr = curr->first_child;
     } break;
     case JSON_value_type_Float: {

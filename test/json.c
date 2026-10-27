@@ -5,7 +5,7 @@
 #include <string.h>
 
 Status test_double_nested_array_two_objects_two_keys() {
-  char *expected = "{\"foo\":[{\"x0\":0,\"y0\":0},{\"x1\":1,\"y1\":1}]}";
+  char *expected = "{\"foo\":[{\"x0\":1,\"y0\":2},{\"x1\":3,\"y1\":4}]}";
   size_t size = strlen(expected);
   Json json = parse(expected, size);
   String result = stringify(json);
@@ -296,8 +296,8 @@ void test_json() {
       test_large_array,
       test_nested_array,
       test_double_nested_array,
-      // test_double_nested_array_two_key_object,
-      // test_double_nested_array_two_objects_two_keys,
+      test_double_nested_array_two_key_object,
+      test_double_nested_array_two_objects_two_keys,
   };
 
   size_t len = sizeof(tests_arr) / sizeof(tests_arr[0]);
@@ -313,3 +313,4 @@ void test_json() {
   print_green("Tests completed successfully!");
   return;
 }
+

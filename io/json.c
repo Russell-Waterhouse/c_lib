@@ -33,7 +33,7 @@ typedef struct {
 void pop_context_stack(JsonStack *st) {
   if (st->len == 0) {
     puts("tried to pop an empty stack");
-    debugger();
+    debugger;
     exit(1);
   }
   st->len--;
@@ -69,6 +69,7 @@ void push_JsonValue(Json *json) {
 JsonValue *get_parent(JsonStack *context_stack) {
   if (context_stack->len == 0) {
     puts("called get_parent on an empty stack");
+    debugger;
     exit(1);
   }
   return context_stack->stack[context_stack->len - 1].parent;
@@ -121,9 +122,7 @@ typedef enum {
   ReadingObjectKeyString,
   ReadingObjectValueInt,
   ReadingObjectValueFloat,
-  ReadyToReadValue,
-  EscapedInKeyString,
-  EscapedInValueString,
+  ReadyToReadObjectValue,
   ReadingValueKeyString,
   FinishedReadingObject,
   FinishedReadingObjectKey,
@@ -160,26 +159,70 @@ Json parse(char *json_str, size_t json_str_len) {
         push_JsonValue(&json);
         continue;
       }
-      if (ReadyToReadValue == state) {
+      if (ReadyToReadObjectValue == state) {
         // {"foo":{"bar":123}}
         //        ^
+        JsonValue *curr = &json.values[json.values_len];
+        curr->type = JSON_value_type_Object;
         state = ReadingObjectKey;
+        JsonValue *parent = get_parent(&context_stack);
+        if (parent->first_child == NULL) {
+          parent->first_child = curr;
+        }
+        push_frame_parent(&json.values[json.values_len], &context_stack);
+        push_JsonValue(&json);
+        if (context_stack.len == 0) {
+          puts("state ready to read value when no parent");
+          debugger;
+          exit(0);
+        }
         continue;
       }
-    } break;
+      if (ReadingArrayElement == state) {
+        // [{"bar":123}]
+        //  ^
+        JsonValue *curr = &json.values[json.values_len];
+        curr->type = JSON_value_type_Object;
+        state = ReadingObjectKey;
+        JsonValue *parent = get_parent(&context_stack);
+        if (parent->first_child == NULL) {
+          parent->first_child = curr;
+        }
+        push_frame_parent(&json.values[json.values_len], &context_stack);
+        push_JsonValue(&json);
+        if (context_stack.len == 0) {
+          puts("state ready to read value when no parent");
+          debugger;
+          exit(0);
+        }
+        continue;
+      }
+    }
+      debugger;
+      break;
     case '}': {
       JsonValue *parent = get_parent(&context_stack);
       if (JSON_value_type_Object != parent->type) {
         printf("unmatched curly brace at charcter %zu\n", i);
-        exit(1);
+        debugger exit(1);
       }
       if (ReadingObjectKey == state) {
         // {}
         //  ^
         // this object has no key and no value
-        // TODO
-        state = FinishedReadingObject;
         pop_context_stack(&context_stack);
+        state = FinishedReadingObject;
+        continue;
+      }
+      if (FinishedReadingObject == state) {
+        // {"foo":{}}
+        //          ^
+        parent->len++;
+        if (parent->first_child == NULL) {
+          parent->first_child = &json.values[json.values_len - 1];
+        }
+        pop_context_stack(&context_stack);
+        state = FinishedReadingObject;
         continue;
       }
       if (ReadingObjectValueInt == state) {
@@ -209,11 +252,30 @@ Json parse(char *json_str, size_t json_str_len) {
           parent->first_child = &json.values[json.values_len];
         }
         pop_context_stack(&context_stack);
+        if (context_stack.len > 0) {
+          JsonValue *grandparent = get_parent(&context_stack);
+          if (grandparent->first_child == NULL) {
+            grandparent->first_child = parent;
+          }
+        }
         push_JsonValue(&json);
         state = FinishedReadingObject;
         continue;
       }
-    } break;
+      if (state == FinishedReadingArray) {
+        // {"key":[1,2,3]}
+        //               ^
+        JsonValue *parent = get_parent(&context_stack);
+        parent->len++;
+        if (parent->first_child == NULL) {
+          parent->first_child = &json.values[json.values_len];
+        }
+        pop_context_stack(&context_stack);
+        push_JsonValue(&json);
+        state = FinishedReadingObject;
+        continue;
+      }
+    } debugger break;
     case '[': {
       if (state == StartState) {
         // [1,2,3]
@@ -225,7 +287,23 @@ Json parse(char *json_str, size_t json_str_len) {
         state = ReadingArrayElement;
         continue;
       }
-    } break;
+      if (state == ReadyToReadObjectValue) {
+        // {"foo":[1,2,3]}
+        //        ^
+        JsonValue *curr = &json.values[json.values_len];
+        curr->type = JSON_value_type_Array;
+
+        JsonValue *parent = get_parent(&context_stack);
+        if (parent->first_child == NULL) {
+          parent->first_child = curr;
+        }
+        // TODO: handle next sibling here?
+        push_frame_parent(&json.values[json.values_len], &context_stack);
+        push_JsonValue(&json);
+        state = ReadingArrayElement;
+        continue;
+      }
+    } debugger break;
     case ']': {
       JsonValue *parent = get_parent(&context_stack);
       JsonValue *last_sibling = get_last_sibling(&context_stack);
@@ -260,7 +338,25 @@ Json parse(char *json_str, size_t json_str_len) {
         state = FinishedReadingArray;
         continue;
       }
-      break;
+      if (FinishedReadingObject == state) {
+        // [{"key":123}]
+        //             ^
+        JsonValue *curr = &json.values[json.values_len];
+        if (parent->first_child == NULL) {
+          parent->first_child = &json.values[json.values_len];
+        }
+        if (NULL == last_sibling) {
+          context_stack.stack[context_stack.len].last_sibling = curr;
+        } else if (NULL == last_sibling->next_sibling) {
+          last_sibling->next_sibling = curr;
+        }
+        pop_context_stack(&context_stack);
+        push_JsonValue(&json);
+        state = FinishedReadingArray;
+        continue;
+      }
+    }
+      debugger break;
     case '"': {
       if (state == ReadingObjectKeyString) {
         state = FinishedReadingObjectKey;
@@ -273,11 +369,12 @@ Json parse(char *json_str, size_t json_str_len) {
         continue;
       }
       printf("Error: unexpected character %c at index %zu", c, i);
+      debugger;
       exit(1);
-    } break;
+    } debugger break;
     case ',': {
-      parent = get_parent(&context_stack);
-      last_sibling = get_last_sibling(&context_stack);
+      JsonValue *parent = get_parent(&context_stack);
+      JsonValue *last_sibling = get_last_sibling(&context_stack);
       long int value = flush_stack_buffer_to_int(&scratch);
       if (ReadingArrayElementInt == state) {
         JsonValue *curr = &json.values[json.values_len];
@@ -301,18 +398,18 @@ Json parse(char *json_str, size_t json_str_len) {
       }
       printf("Error: unexpected character %c at index %zu", c, i);
       exit(1);
-    } break;
+    } debugger break;
     case ':': {
       if (FinishedReadingObjectKey == state) {
-        state = ReadyToReadValue;
+        state = ReadyToReadObjectValue;
       } else {
         puts("unhandled");
         exit(1);
       }
       continue;
-    } break;
+    } debugger break;
     default: {
-      if (ReadyToReadValue == state && isdigit(c)) {
+      if (ReadyToReadObjectValue == state && isdigit(c)) {
         state = ReadingObjectValueInt;
       }
       if (ReadingArrayElementInt == state && isdigit(c)) {
@@ -343,16 +440,15 @@ Json parse(char *json_str, size_t json_str_len) {
         continue;
       }
       printf("Error: unexpected character %c at index %zu", c, i);
-      debugger();
+      debugger;
       exit(1);
-    } break;
-    }
+    } debugger break;
     }
   }
 
   if (context_stack.len > 0) {
     puts("Unclosed characters in JSON");
-    debugger();
+    debugger;
     exit(1);
   }
 
@@ -408,9 +504,7 @@ String stringify(Json json) {
 
   if (json.values[0].type == JSON_value_type_Object) {
     String_insert_back_or_die(&s, '{');
-  }
-
-  if (json.values[0].type == JSON_value_type_Array) {
+  } else if (json.values[0].type == JSON_value_type_Array) {
     String_insert_back_or_die(&s, '[');
   }
 
@@ -420,6 +514,15 @@ String stringify(Json json) {
   while (curr != NULL || context_stack.len > 1) {
     if (curr == NULL) {
       curr = context_stack.stack[context_stack.len - 1].last_sibling;
+      ValueType parent_type = get_parent(&context_stack)->type;
+      if (parent_type == JSON_value_type_Object) {
+        String_insert_back_or_die(&s, '}');
+      } else if (parent_type == JSON_value_type_Array) {
+        String_insert_back_or_die(&s, ']');
+      } else {
+        puts("Invalid parent type");
+        exit(1);
+      }
       pop_context_stack(&context_stack);
       continue;
     }
@@ -427,8 +530,20 @@ String stringify(Json json) {
     ValueType parent_type = get_parent(&context_stack)->type;
     switch (curr->type) {
     case JSON_value_type_Object: {
+      if (parent_type == JSON_value_type_Object) {
+        copy_key_and_colon_to_string(&s, curr->key, curr->key_len);
+      }
+      String_insert_back_or_die(&s, '{');
+      push_frame_parent(curr, &context_stack);
+      curr = curr->first_child;
     } break;
     case JSON_value_type_Array: {
+      if (parent_type == JSON_value_type_Object) {
+        copy_key_and_colon_to_string(&s, curr->key, curr->key_len);
+      }
+      String_insert_back_or_die(&s, '[');
+      push_frame_parent(curr, &context_stack);
+      curr = curr->first_child;
     } break;
     case JSON_value_type_Float: {
       if (parent_type == JSON_value_type_Object) {

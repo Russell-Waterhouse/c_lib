@@ -28,7 +28,6 @@ typedef struct JsonValue {
     i64 int_val;
     float float_val;
     char *str_val;
-    size_t len;
     bool bool_val;
   };
 } JsonValue;

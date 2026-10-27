@@ -23,7 +23,7 @@ Status test_double_nested_array_two_objects_two_keys() {
 }
 
 Status test_double_nested_array_two_key_object() {
-  char *expected = "{\"foo\":[{\"x0\":0,\"y0\":0}]}";
+  char *expected = "{\"foo\":[{\"x0\":6,\"y0\":7}]}";
   size_t size = strlen(expected);
   Json json = parse(expected, size);
   String result = stringify(json);

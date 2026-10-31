@@ -127,10 +127,10 @@ long int flush_stack_buffer_to_int(StackBuffer *scratch) {
   // TODO: there's more to strtol for error handling
 }
 
-float flush_stack_buffer_to_float(StackBuffer *scratch) {
+double flush_stack_buffer_to_double(StackBuffer *scratch) {
   add_char_to_stack_buffer(scratch, '\0');
   scratch->len = 0;
-  return strtof(scratch->buffr, NULL);
+  return strtod(scratch->buffr, NULL);
   // TODO: there's more to strtof for error handling
 }
 
@@ -242,7 +242,7 @@ Json parse(char *json_str, size_t json_str_len) {
       if (ReadingObjectValueFloat == state) {
         // {"key":1.23}
         //            ^
-        float value = flush_stack_buffer_to_float(&scratch);
+        double value = flush_stack_buffer_to_double(&scratch);
         JsonValue *curr = &json.values[json.values_len];
         curr->type = JSON_value_type_Float;
         curr->float_val = value;
@@ -362,7 +362,7 @@ Json parse(char *json_str, size_t json_str_len) {
       }
       if (ReadingObjectValueFloat == state) {
         curr->type = JSON_value_type_Float;
-        float value = flush_stack_buffer_to_float(&scratch);
+        double value = flush_stack_buffer_to_double(&scratch);
         curr->float_val = value;
         update_context_with_child_element(&context_stack, curr);
         push_JsonValue(&json);
@@ -447,7 +447,7 @@ void copy_int_to_string(String *s, long int v) {
   s->size += str_buffr_size;
 }
 
-void copy_float_to_string(String *s, float f) {
+void copy_double_to_string(String *s, double f) {
   char buffr[STACK_BUFFER_LEN] = {0};
   snprintf(buffr, STACK_BUFFER_LEN, "%f", f);
   size_t str_buffr_size = strlen(buffr);
@@ -539,7 +539,7 @@ String stringify(Json json) {
       if (parent_type == JSON_value_type_Object) {
         copy_key_and_colon_to_string(&s, curr->key, curr->key_len);
       }
-      copy_float_to_string(&s, curr->float_val);
+      copy_double_to_string(&s, curr->float_val);
       curr = curr->next_sibling;
       if (NULL != curr) {
         String_insert_back_or_die(&s, ',');

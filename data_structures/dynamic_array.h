@@ -42,7 +42,7 @@
     a->arr[a->size++] = value;                                                 \
   }                                                                            \
                                                                                \
-  void Name##_free(Name a) {                                                   \
+  static inline void Name##_free(Name a) {                                     \
     if (NULL == a.arr) {                                                       \
       return;                                                                  \
     }                                                                          \

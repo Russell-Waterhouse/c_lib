@@ -26,7 +26,7 @@ typedef struct JsonValue {
   struct JsonValue *next_sibling;
   union {
     i64 int_val;
-    float float_val;
+    double float_val;
     char *str_val;
     bool bool_val;
   };

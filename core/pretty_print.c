@@ -9,3 +9,7 @@ void print_green(char* msg) {
   printf("\x1B[32m%s\033[0m\n", msg);
 }
 
+void print_yellow(char* msg) {
+  printf("\033[0;33m%s\033[0m\n", msg);
+}
+

@@ -9,14 +9,14 @@
 #define DEFINE_DYNAMIC_ARRAY(T, Name)                                          \
   typedef struct {                                                             \
     size_t size;                                                               \
-    size_t memsize;                                                            \
+    size_t capacity;                                                           \
     T *arr;                                                                    \
   } Name;                                                                      \
   static inline Name Name##_init(size_t size) {                                \
     Name a;                                                                    \
     a.size = size;                                                             \
-    a.memsize = size;                                                          \
-    a.arr = calloc(size, sizeof(size_t));                                      \
+    a.capacity = size;                                                         \
+    a.arr = (T *)calloc(size, sizeof(char));                                   \
     if (NULL == a.arr) {                                                       \
       puts("Failed to allocate requested memory for array");                   \
       exit(-1);                                                                \
@@ -25,23 +25,21 @@
     return a;                                                                  \
   }                                                                            \
                                                                                \
-  Name Name##_insert_back_or_die(Name a, T value) {                            \
-    if (a.size >= a.memsize) {                                                 \
-      if (a.memsize == 0) {                                                    \
-        a.memsize = DYNAMIC_ARRAY_START_SIZE;                                  \
+  static inline void Name##_insert_back_or_die(Name *a, T value) {             \
+    if (a->size >= a->capacity) {                                              \
+      if (a->capacity == 0) {                                                  \
+        a->capacity = DYNAMIC_ARRAY_START_SIZE;                                \
       } else {                                                                 \
-        a.memsize *= 2;                                                        \
+        a->capacity *= 2;                                                      \
       }                                                                        \
-      a.arr = realloc(a.arr, a.memsize * sizeof(T));                           \
-      if (a.arr == NULL) {                                                     \
+      a->arr = (T *)realloc(a->arr, a->capacity * sizeof(T));                  \
+      if (a->arr == NULL) {                                                    \
         printf("Failed to allocate memory for array holder\n");                \
         exit(-1);                                                              \
       }                                                                        \
     }                                                                          \
                                                                                \
-    a.arr[a.size++] = value;                                                   \
-                                                                               \
-    return a;                                                                  \
+    a->arr[a->size++] = value;                                                 \
   }                                                                            \
                                                                                \
   void Name##_free(Name a) {                                                   \
@@ -53,19 +51,17 @@
     a.arr = NULL;                                                              \
   }                                                                            \
                                                                                \
-  u8 Name##_equal(Name a1, Name a2) {                                          \
-    size_t i;                                                                  \
-                                                                               \
-    if (a1.size != a2.size) {                                                  \
-      return 0;                                                                \
+  static inline void Name##_resize(Name *a, size_t new_size) {                 \
+    if (a->capacity > new_size) {                                              \
+      puts("Cannot resize a dynamic array smaller than it currently is");      \
+      exit(-1);                                                                \
     }                                                                          \
-                                                                               \
-    for (i = 0; i < a1.size; i++) {                                            \
-      if (a1.arr[i] != a2.arr[i]) {                                            \
-        return 0;                                                              \
-      }                                                                        \
+    a->capacity = new_size;                                                    \
+    a->arr = (T *)realloc(a->arr, a->capacity * sizeof(T));                    \
+    if (a->arr == NULL) {                                                      \
+      printf("Failed to allocate memory for array holder\n");                  \
+      exit(-1);                                                                \
     }                                                                          \
-    return 1;                                                                  \
   }
 
 #endif

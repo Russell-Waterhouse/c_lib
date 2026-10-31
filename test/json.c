@@ -1,0 +1,342 @@
+#include "../io/json.h"
+#include "../core/debugging.h"
+#include "../core/pretty_print.h"
+#include "../types/types.h"
+#include <string.h>
+
+void print_diff(char *s1, char *s2, size_t size) {
+  for (size_t i = 0; i < size; i++) {
+    if (s1[i] != s2[i]) {
+      printf("%c != %c at index %lu\n", s1[i], s2[i], i);
+    }
+  }
+}
+
+Status test_nested_array_objects_floats() {
+  char *expected =
+      "{\"pairs\":[{\"x0\":163.000000,\"y0\":27.000000,\"x1\":106.000000,"
+      "\"y1\":25.000000},{\"x0\":-67.000000,\"y0\":-44.000000,\"x1\":115."
+      "000000,\"y1\":-78.000000},{\"x0\":69.000000,\"y0\":32.000000,\"x1\":1."
+      "000000,\"y1\":-23.000000}]}";
+  size_t size = strlen(expected);
+  Json json = parse(expected, size);
+  String result = stringify(json);
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
+    free(json.values);
+    free(json.strs);
+    free(result.arr);
+    return SUCCESS;
+  }
+  debugger;
+  free(json.values);
+  free(json.strs);
+  free(result.arr);
+  return FAIL;
+}
+
+Status test_double_nested_array_two_objects_two_keys() {
+  char *expected = "{\"foo\":[{\"x0\":1,\"y0\":2},{\"x1\":3,\"y1\":4}]}";
+  size_t size = strlen(expected);
+  Json json = parse(expected, size);
+  String result = stringify(json);
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
+    free(json.values);
+    free(json.strs);
+    free(result.arr);
+    return SUCCESS;
+  }
+  debugger;
+  free(json.values);
+  free(json.strs);
+  free(result.arr);
+  return FAIL;
+}
+
+Status test_double_nested_array_two_key_object() {
+  char *expected = "{\"foo\":[{\"x0\":6,\"y0\":7}]}";
+  size_t size = strlen(expected);
+  Json json = parse(expected, size);
+  String result = stringify(json);
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
+    free(json.values);
+    free(json.strs);
+    free(result.arr);
+    return SUCCESS;
+  }
+  debugger;
+  free(json.values);
+  free(json.strs);
+  free(result.arr);
+  return FAIL;
+}
+
+Status test_double_nested_array() {
+  char *expected = "{\"foo\":[{\"x0\":1}]}";
+  size_t size = strlen(expected);
+  Json json = parse(expected, size);
+  String result = stringify(json);
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
+    free(json.values);
+    free(json.strs);
+    free(result.arr);
+    return SUCCESS;
+  }
+  debugger;
+  free(json.values);
+  free(json.strs);
+  free(result.arr);
+  return FAIL;
+}
+
+Status test_nested_array() {
+  char *expected = "{\"foo\":[1,2,3]}";
+  size_t size = strlen(expected);
+  Json json = parse(expected, size);
+  String result = stringify(json);
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
+    free(json.values);
+    free(json.strs);
+    free(result.arr);
+    return SUCCESS;
+  }
+  debugger;
+  free(json.values);
+  free(json.strs);
+  free(result.arr);
+  return FAIL;
+}
+
+Status test_large_array() {
+  char *expected =
+      "[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,"
+      "27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,"
+      "51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,"
+      "75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,"
+      "99,100]";
+  size_t size = strlen(expected);
+  Json json = parse(expected, size);
+  String result = stringify(json);
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
+    free(json.values);
+    free(json.strs);
+    free(result.arr);
+    return SUCCESS;
+  }
+  debugger;
+  free(json.values);
+  free(json.strs);
+  free(result.arr);
+  return FAIL;
+}
+
+Status test_nested_non_emtpy_object_float() {
+  char *expected = "{\"foo\":{\"bar\":1.125000}}";
+  size_t size = strlen(expected);
+  Json json = parse(expected, size);
+  String result = stringify(json);
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
+    free(json.values);
+    free(json.strs);
+    free(result.arr);
+    return SUCCESS;
+  }
+  debugger;
+  free(json.values);
+  free(json.strs);
+  free(result.arr);
+  return FAIL;
+}
+
+Status test_nested_non_emtpy_object_int() {
+  char *expected = "{\"foo\":{\"bar\":123}}";
+  size_t size = strlen(expected);
+  Json json = parse(expected, size);
+  String result = stringify(json);
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
+    free(json.values);
+    free(json.strs);
+    free(result.arr);
+    return SUCCESS;
+  }
+  debugger;
+  free(json.values);
+  free(json.strs);
+  free(result.arr);
+  return FAIL;
+}
+
+Status test_two_keys_object() {
+  char *expected = "{\"x1\":1,\"x2\":2}";
+  size_t size = strlen(expected);
+  Json json = parse(expected, size);
+  String result = stringify(json);
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
+    free(json.values);
+    free(json.strs);
+    free(result.arr);
+    return SUCCESS;
+  }
+  debugger;
+  free(json.values);
+  free(json.strs);
+  free(result.arr);
+  return FAIL;
+}
+
+Status test_nested_empty_object() {
+  char *expected = "{\"foo\":{}}";
+  size_t size = strlen(expected);
+  Json json = parse(expected, size);
+  String result = stringify(json);
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
+    free(json.values);
+    free(json.strs);
+    free(result.arr);
+    return SUCCESS;
+  }
+  debugger;
+  free(json.values);
+  free(json.strs);
+  free(result.arr);
+  return FAIL;
+}
+
+Status test_basic_array() {
+  char *expected = "[1,2,3]";
+  size_t size = strlen(expected);
+  Json json = parse(expected, size);
+  String result = stringify(json);
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
+    free(json.values);
+    free(json.strs);
+    free(result.arr);
+    return SUCCESS;
+  }
+  debugger;
+  free(json.values);
+  free(json.strs);
+  free(result.arr);
+  return FAIL;
+}
+
+Status test_single_element_array() {
+  char *expected = "[1]";
+  size_t size = strlen(expected);
+  Json json = parse(expected, size);
+  String result = stringify(json);
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
+    free(json.values);
+    free(json.strs);
+    free(result.arr);
+    return SUCCESS;
+  }
+  free(json.values);
+  free(json.strs);
+  free(result.arr);
+  return FAIL;
+}
+
+Status test_empty_array() {
+  char *expected = "[]";
+  size_t size = strlen(expected);
+  Json json = parse(expected, size);
+  String result = stringify(json);
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
+    free(json.values);
+    free(json.strs);
+    free(result.arr);
+    return SUCCESS;
+  }
+  debugger;
+  free(json.values);
+  free(json.strs);
+  free(result.arr);
+  return FAIL;
+}
+
+Status test_single_object_float() {
+  char *expected = "{\"key\":1.100000}";
+  size_t size = strlen(expected);
+  Json json = parse(expected, size);
+  String result = stringify(json);
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
+    free(json.values);
+    free(json.strs);
+    free(result.arr);
+    return SUCCESS;
+  }
+  free(json.values);
+  free(json.strs);
+  free(result.arr);
+  return FAIL;
+}
+
+Status test_single_object_int() {
+  char *expected = "{\"key\":12345}";
+  size_t size = strlen(expected);
+  Json json = parse(expected, size);
+  String result = stringify(json);
+  if (size == result.size && !memcmp(expected, result.arr, result.size)) {
+    free(json.values);
+    free(json.strs);
+    free(result.arr);
+    return SUCCESS;
+  }
+  debugger;
+  free(json.values);
+  free(json.strs);
+  free(result.arr);
+  return FAIL;
+}
+
+Status test_empty_json() {
+  char *empty = "{}";
+  size_t size = strlen(empty);
+  Json json = parse(empty, size);
+  String result = stringify(json);
+  if (size == result.size && !memcmp(empty, result.arr, result.size)) {
+    free(json.values);
+    free(json.strs);
+    free(result.arr);
+    return SUCCESS;
+  }
+  debugger;
+  free(json.values);
+  free(json.strs);
+  free(result.arr);
+  return FAIL;
+}
+
+void test_json() {
+  puts("Starting json tests.");
+  Status (*tests_arr[])(void) = {
+      test_empty_json,
+      test_single_object_int,
+      test_single_object_float,
+      test_empty_array,
+      test_single_element_array,
+      test_basic_array,
+      test_nested_empty_object,
+      test_nested_non_emtpy_object_int,
+      test_nested_non_emtpy_object_float,
+      test_large_array,
+      test_nested_array,
+      test_double_nested_array,
+      test_double_nested_array_two_key_object,
+      test_double_nested_array_two_objects_two_keys,
+      test_nested_array_objects_floats,
+  };
+
+  size_t len = sizeof(tests_arr) / sizeof(tests_arr[0]);
+
+  for (size_t i = 0; i < len; i++) {
+    Status res = tests_arr[i]();
+    printf("Test number %zu %s\n", i, res ? "PASSED" : "FAILED");
+    if (SUCCESS != tests_arr[i]()) {
+      print_red("There were JSON test failures.");
+      return;
+    }
+  }
+  print_green("Tests completed successfully!");
+  return;
+}
